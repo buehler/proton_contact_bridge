@@ -1,0 +1,43 @@
+name: proton_contact_bridge
+description: 'A contacts app that syncs with Proton Contacts (from proton mail) and provides local contact sync mechanisms to phones'
+publish_to: 'none'
+
+version: 1.0.0
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_secure_storage: ^10.3.1
+  http: ^1.6.0
+  shared_preferences: ^2.5.5
+  connectivity_plus: ^7.2.0
+  riverpod_annotation: ^4.0.3
+  json_annotation: ^4.12.0
+  freezed_annotation: ^3.1.0
+  freezed: ^3.2.6-dev.1
+  json_serializable: ^6.14.0
+  dsrp: ^0.5.5
+  dio: ^5.10.0
+  bcrypt: ^1.2.0
+  crypto: ^3.0.7
+  dart_pg: ^2.1.0
+  rxdart: ^0.28.0
+  webview_flutter: ^4.14.1
+  package_info_plus: ^10.2.1
+  async: ^2.13.1
+  go_router: ^17.3.0
+  flex_color_scheme: ^8.4.0
+  google_fonts: ^8.2.0
+  flutter_riverpod: ^3.3.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.15.1
+  riverpod_generator: ^4.0.4
+flutter:
+  uses-material-design: true
