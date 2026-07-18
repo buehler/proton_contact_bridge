@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:proton_contact_bridge/providers/proton_auth.dart';
-import 'package:proton_contact_bridge/ui/components/text.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class HumanVerificationPage extends ConsumerWidget {
@@ -67,15 +66,47 @@ class HumanVerificationPage extends ConsumerWidget {
           queryParameters: {...captchaUrl.queryParameters, 'embed': 'true'},
         ),
       );
-    return Column(
-      children: [
-        AppText(
-          'Please complete the captcha to continue',
-          variant: TypographyVariant.headlineMedium,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
+
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.security_outlined,
+                    size: 36,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Verify that you are human',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Complete the verification below to continue',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(child: WebViewWidget(controller: controller)),
+          ],
         ),
-        Expanded(child: WebViewWidget(controller: controller)),
-      ],
+      ),
     );
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:proton_contact_bridge/providers/proton_auth.dart';
 
-class MainShell extends StatefulWidget {
+class MainShell extends ConsumerStatefulWidget {
   const MainShell({
     super.key,
     required this.child,
@@ -14,10 +16,10 @@ class MainShell extends StatefulWidget {
   final ValueChanged<String>? onSearchbarChange;
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends ConsumerState<MainShell> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _searchController = TextEditingController();
 
@@ -37,7 +39,7 @@ class _MainShellState extends State<MainShell> {
 
     return Scaffold(
       key: _scaffoldKey,
-      drawer: _buildDrawer(context, selectedIndex),
+      drawer: _buildDrawer(context),
       body: SafeArea(
         child: Column(
           children: [
@@ -106,7 +108,7 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
-  Widget _buildDrawer(BuildContext context, int selectedIndex) {
+  Widget _buildDrawer(BuildContext context) {
     return Drawer(
       child: SafeArea(
         child: ListView(
@@ -115,26 +117,16 @@ class _MainShellState extends State<MainShell> {
             const DrawerHeader(
               child: Align(
                 alignment: Alignment.bottomLeft,
-                child: Text('Contacts'),
+                child: Text('Proton Contacts Bridge'),
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.contacts_outlined),
-              title: const Text('Contacts'),
-              selected: selectedIndex == 0,
-              onTap: () => _goToDestination(context, 0),
-            ),
-            ListTile(
-              leading: const Icon(Icons.group_outlined),
-              title: const Text('Groups'),
-              selected: selectedIndex == 1,
-              onTap: () => _goToDestination(context, 1),
-            ),
-            ListTile(
-              leading: const Icon(Icons.star_border),
-              title: const Text('Favorites'),
-              selected: selectedIndex == 2,
-              onTap: () => _goToDestination(context, 2),
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () async {
+                Navigator.of(context).pop();
+                await ref.read(protonAuthProvider).logout();
+              },
             ),
           ],
         ),

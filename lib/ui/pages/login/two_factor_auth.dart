@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:proton_contact_bridge/providers/proton_auth.dart';
-import 'package:proton_contact_bridge/ui/components/text.dart';
 
 class TwoFactorAuthPage extends ConsumerWidget {
   TwoFactorAuthPage({super.key});
@@ -9,44 +8,68 @@ class TwoFactorAuthPage extends ConsumerWidget {
   final _totpController = TextEditingController();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Flex(
-    direction: Axis.vertical,
-    crossAxisAlignment: CrossAxisAlignment.stretch,
-    children: [
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: Card(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                AppText(
-                  'Please enter your 2FA code',
-                  variant: TypographyVariant.headlineMedium,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
 
-                TextField(
-                  controller: _totpController,
-                  autofocus: true,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    hintText: 'Enter your 2FA code',
-                    labelText: '2FA CODE',
-                    labelStyle: TypographyVariant.labelMedium.style,
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 480),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Icon(
+                    Icons.verified_user_outlined,
+                    size: 40,
+                    color: theme.colorScheme.primary,
                   ),
-                ),
-                FilledButton(
-                  onPressed: () => ref
-                      .read(protonAuthProvider)
-                      .submitTotp(_totpController.text),
-                  child: const AppText('Submit'),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  Text(
+                    'Two-factor authentication',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Enter the code from your authenticator app',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  TextField(
+                    controller: _totpController,
+                    autofocus: true,
+                    autocorrect: false,
+                    decoration: const InputDecoration(
+                      labelText: '2FA code',
+                      hintText: 'Enter your 2FA code',
+                      prefixIcon: Icon(Icons.pin_outlined),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    height: 48,
+                    child: FilledButton.icon(
+                      onPressed: () => ref
+                          .read(protonAuthProvider)
+                          .submitTotp(_totpController.text),
+                      icon: const Icon(Icons.arrow_forward),
+                      label: const Text('Submit'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
-    ],
-  );
+    );
+  }
 }
