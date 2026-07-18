@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#07101c">
+  <meta name="description" content="How KinCrypt handles your contacts, secure session storage, local logs, website requests, and support messages.">
+  <title>Privacy statement — KinCrypt</title>
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><div class="wrap header-inner">
+    <a class="brand" href="index.html" aria-label="KinCrypt home"><img src="assets/icon.png" width="48" height="48" alt=""><span>KinCrypt</span></a>
+    <nav class="site-nav" aria-label="Main navigation"><a href="index.html">Overview</a><a href="terms.html">Terms</a><a href="privacy.html" aria-current="page">Privacy</a><a href="mailto:kincrypt-support@cbue.ch">Support</a></nav>
+  </div></header>
+  <main id="main" class="wrap" tabindex="-1">
+    <div class="legal-header">
+      <h1>Privacy statement</h1>
+      <p class="intro">Your contacts stay on your device and synchronize directly with Proton. KinCrypt has no developer-operated backend, app analytics, or automatic log uploads.</p>
+      <p class="updated">Effective date: <time datetime="2026-09-01">1 September 2026</time></p>
+      <p class="updated">Last updated: <time datetime="2026-09-20">20 September 2026</time></p>
+    </div>
+    <div class="legal-layout">
+      <nav class="contents" aria-label="Privacy contents"><h2>On this page</h2><ol>
+        <li><a href="#responsibility">1. Who is responsible</a></li><li><a href="#app">2. Data in the app</a></li><li><a href="#authentication">3. Passwords and tokens</a></li><li><a href="#logs">4. Local diagnostic logs</a></li><li><a href="#website">5. This website</a></li><li><a href="#support">6. Support messages</a></li><li><a href="#purposes">7. Purposes and legal bases</a></li><li><a href="#recipients">8. Recipients and transfers</a></li><li><a href="#retention">9. Retention and deletion</a></li><li><a href="#rights">10. Your rights</a></li><li><a href="#updates">11. Updates</a></li>
+      </ol></nav>
+      <div class="legal-content">
+        <section id="responsibility"><h2>1. Who is responsible</h2>
+          <p class="contact-address">Christoph Bühler<br>c/o Glas- und Farbdesign AG<br>Weidenhofstrasse 9c<br>9323 Steinach<br>Switzerland</p>
+          <p><strong>Christoph Bühler, Switzerland</strong>, operates KinCrypt and is responsible for the website and support processing described here. The company address above is the operator’s correspondence address. For privacy questions or requests, email <a href="mailto:kincrypt-support@cbue.ch">kincrypt-support@cbue.ch</a>.</p>
+          <p>This statement distinguishes information processed locally by the app, information exchanged with Proton, and information processed when you visit this website or contact support. Proton is responsible for its own account and service processing under <a href="https://proton.me/legal/privacy">its privacy policy</a>.</p>
+        </section>
+        <section id="app"><h2>2. Data in the app</h2>
+          <p>KinCrypt reads, stores, displays, and edits the contacts you use with it. Depending on what your contacts contain, this can include names, email addresses, phone numbers, addresses, photos, notes, and group memberships. It also keeps local settings and information needed to synchronize.</p>
+          <p>A local database on your device holds contact data. The app communicates directly with Proton to sign in and synchronize contacts in both directions. Proton receives the requests and data needed to provide those services, including the network information involved in a connection.</p>
+          <p>There is no KinCrypt server between the app and Proton. The operator does not receive your contacts or app-usage analytics through the app. The app and this website do not communicate with each other.</p>
+          <p>The app may download its Manrope typeface from Google’s font server when it is not already available locally. This sends connection information, including your IP address and the requested font file, to Google. It does not send your contacts, password, or Proton session tokens. The downloaded font is cached locally. See <a href="https://policies.google.com/privacy">Google’s privacy policy</a> for its processing of these requests.</p>
+        </section>
+        <section id="authentication"><h2>3. Passwords and session tokens</h2>
+          <p><strong>Access and refresh tokens are stored in your device’s secure storage.</strong> These session credentials let KinCrypt reconnect to Proton without asking you to enter your password each time.</p>
+          <p><strong>Your password is never saved persistently by KinCrypt.</strong> It is used temporarily in memory for authentication and unlocking the cryptographic keys needed to access your Proton contacts. Pending authentication credentials are cleared when that flow completes or is discarded.</p>
+          <p>KinCrypt uses Proton’s authentication library and Secure Remote Password (SRP), the protocol also used by Proton, to prove knowledge of the password without sending the password itself as a login credential. SRP describes the authentication exchange; secure token storage and not saving the password are separate choices in KinCrypt’s implementation. <a href="https://proton.me/blog/encrypted-email-authentication">Read Proton’s explanation of SRP</a>.</p>
+          <p>The app also keeps cryptographic key material in secure storage to resume access to contacts. Secure credential storage does not mean that the local contact database or diagnostic logs have separate app-level encryption. Your device security and backup settings also matter.</p>
+        </section>
+        <section id="logs"><h2>4. Local diagnostic logs</h2>
+          <p>KinCrypt stores diagnostic logs locally to help explain synchronization, authentication, and other errors. Logs can contain timestamps, technical events, identifiers, and error details. Depending on the event, they may include personal information.</p>
+          <p>Logs are not automatically uploaded. If you choose to share logs with support, review them first and remove information that is not needed. Never send your password or complete session tokens.</p>
+        </section>
+        <section id="website"><h2>5. This website</h2>
+          <p>This website is hosted on <strong>Vercel’s Hobby plan</strong>. Your browser sends technical requests to Vercel to load the pages. Vercel may process your IP address, request details, and operational or security records to deliver and protect its infrastructure.</p>
+          <p>The site includes no analytics scripts, advertising trackers, embedded third-party media, or contact forms. Its fonts, icon, and stylesheet are served with the pages. The site code does not set cookies or use browser storage. Hosting infrastructure may separately process requests for delivery and security.</p>
+          <p>The website does not receive contacts or authentication tokens from the app. Following an external link takes you to a separately operated service whose privacy information applies there.</p>
+          <p>The operator has enabled no analytics or additional logging integrations and keeps no separate website access logs. This does not disable Vercel’s own infrastructure processing, which is described in <a href="https://vercel.com/legal/privacy-notice">Vercel’s privacy notice</a>.</p>
+        </section>
+        <section id="support"><h2>6. Messages you send to support</h2>
+          <p>If you email <a href="mailto:kincrypt-support@cbue.ch">kincrypt-support@cbue.ch</a>, the operator receives your email address, any name you provide, your message, and attachments you choose to send. The support mailbox is hosted by <strong>Proton Mail</strong>. Proton and your sending email provider process messages for delivery and storage. See <a href="https://proton.me/mail/privacy-policy">Proton Mail’s privacy policy</a>.</p>
+          <p>This information is used to respond, investigate the reported issue, and keep necessary correspondence. Sending a support request is voluntary. Only include contact records or logs when they are relevant and you are entitled to share them. The operator cannot inspect data held only on your device or access your Proton account simply because you request support.</p>
+        </section>
+        <section id="purposes"><h2>7. Purposes and applicable legal bases</h2>
+          <p>Local contact processing and direct Proton exchanges provide the contact-management and synchronization functions you request. Website request processing delivers and secures the site. App font requests obtain the typeface used to display its interface. Support processing responds to your questions and resolves issues.</p>
+          <p>Where the GDPR applies to processing for which the operator is responsible, the relevant bases are:</p>
+          <ul><li><strong>Performance of a contract or steps you request before one</strong> (Article 6(1)(b)), where processing is necessary to provide requested services or related support.</li><li><strong>Legitimate interests</strong> (Article 6(1)(f)), for reliable website delivery, app font delivery, security, ordinary correspondence, and establishing or defending legal claims, balanced against your rights.</li><li><strong>Legal obligations</strong> (Article 6(1)(c)), where records must be retained or a lawful request must be answered.</li></ul>
+          <p>Swiss data-protection requirements apply where relevant. The operator does not use this information for advertising profiles or decisions based solely on automated processing that have legal or similarly significant effects.</p>
+        </section>
+        <section id="recipients"><h2>8. Recipients and international transfers</h2>
+          <p>Proton receives the app’s direct account and synchronization requests. Google receives any app font-download requests described above. Vercel and its relevant infrastructure providers process website requests. Email service providers process support correspondence. Information may also be disclosed where legally required or necessary to establish or defend legal claims.</p>
+          <p>Proton is based in Switzerland and states that Proton Mail data is stored in Switzerland, Germany, or Norway. This includes the support mailbox. Vercel and Google use international infrastructure, including in the United States; request information may be processed outside Switzerland and the EU/EEA. Your own email provider’s processing locations depend on that provider.</p>
+          <p>Vercel and Google state that they participate in the EU–US and Swiss–US Data Privacy Frameworks for covered transfers and use standard contractual clauses or other applicable safeguards where required. Details are available in <a href="https://vercel.com/legal/privacy-notice">Vercel’s transfer information</a> and <a href="https://policies.google.com/privacy/frameworks">Google’s data transfer frameworks</a>. Contact the operator for information about transfers relating to your use of KinCrypt.</p>
+        </section>
+        <section id="retention"><h2>9. Retention and deletion</h2>
+          <h3>On your device and at Proton</h3>
+          <p>Local contacts, settings, and logs remain in the app’s storage until removed through available app or device controls. Backup copies may remain under your device or backup provider’s settings. Do not assume that uninstalling removes every secure-store item or backup.</p>
+          <p>Successful logout removes stored authentication secrets and attempts to revoke the current Proton session. It does not erase the local contact database or delete your Proton account. If remote revocation fails, you can manage sessions through Proton.</p>
+          <p>Deleting a contact in KinCrypt can synchronize that deletion to Proton. Removing local app data is different from deleting data at Proton. Proton’s retention and recovery rules govern copies held by its service.</p>
+          <h3>Website and support information</h3>
+          <p>The operator keeps no separate website request records. Vercel determines retention of its infrastructure records according to its service, security, and legal needs, as described in its privacy notice. No promise of zero logging or immediate deletion is made for Vercel’s infrastructure.</p>
+          <p>Support correspondence is retained as long as needed to handle the request and any necessary follow-up, comply with legal duties, or establish or defend claims, then deleted or anonymised when those reasons no longer apply. Retention depends on the nature of the request and any applicable legal period.</p>
+        </section>
+        <section id="rights"><h2>10. Your rights and choices</h2>
+          <p>Depending on the law that applies, you may request access to your personal information, correction, deletion, restriction of processing, or a portable copy. You may object to processing based on legitimate interests. These rights can be subject to legal conditions and exceptions.</p>
+          <p>Send requests concerning the operator’s processing to <a href="mailto:kincrypt-support@cbue.ch">kincrypt-support@cbue.ch</a>. Only information reasonably necessary to verify and handle your request will be requested. Requests will be addressed within applicable legal deadlines.</p>
+          <p>For data held only on your device, use the app or device controls; the operator has no remote copy to retrieve or erase. For your Proton account and Proton’s processing, contact Proton directly.</p>
+          <p>You may raise a concern with the <a href="https://www.edoeb.admin.ch/en">Swiss Federal Data Protection and Information Commissioner</a>. Where the GDPR applies, you may lodge a complaint with a competent supervisory authority, including in the country of your habitual residence, place of work, or the alleged infringement. The <a href="https://www.edpb.europa.eu/about-edpb/about-edpb/members_en">European Data Protection Board lists EU/EEA authorities</a>.</p>
+        </section>
+        <section id="updates"><h2>11. Updates to this statement</h2>
+          <p>This statement has an effective date of 1 September 2026 and was last updated on 20 September 2026. Material changes to processing will be reflected here and communicated as required by applicable law.</p>
+        </section>
+        <a class="text-link back-top" href="#top">Back to top</a>
+      </div>
+    </div>
+  </main>
+  <footer class="wrap site-footer">
+    <div class="footer-top"><a class="brand" href="index.html"><span>KinCrypt</span></a><nav class="site-nav" aria-label="Footer navigation"><a href="index.html">Overview</a><a href="terms.html">Terms</a><a href="privacy.html" aria-current="page">Privacy</a><a href="mailto:kincrypt-support@cbue.ch">Support</a></nav></div>
+    <p class="footer-note">An independent app by Christoph Bühler. Contact address: c/o Glas- und Farbdesign AG, Weidenhofstrasse 9c, 9323 Steinach, Switzerland. KinCrypt is not affiliated with or endorsed by Proton AG. Proton names and marks belong to their respective owners.</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,20 @@
+
+db_inspect:
+    atlas schema inspect --env gorm --url "env://src"
+
+diff_migration name:
+    atlas migrate diff {{name}} --env gorm
+
+custom_migration name:
+    atlas migrate new {{name}} --env gorm
+
+hash_migrations:
+    atlas migrate hash --env gorm
+
+[confirm]
+delete_migrations:
+    rm -rf database/migrations/*.sql
+    rm -rf database/migrations/atlas.sum
+
+native_headers:
+    cd .. && make gen_headers

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package bridge;
+
+option go_package = "proton_go_api_bridge/native/protobuf/bridge";
+
+import "commands/commands.proto";
+import "models/models.proto";
+import "results/results.proto";
+
+message Command {
+  oneof command {
+    commands.Login       login        = 1;
+    commands.Logout      logout       = 2;
+    commands.GetUser     get_user     = 3;
+    commands.Contacts    contacts     = 4;
+    commands.ContactSync contact_sync = 5;
+    commands.Groups      groups       = 6;
+  }
+}
+
+message Result {
+  oneof response {
+    results.Error       error        = 1;
+    results.Success     success      = 2;
+    results.Login       login        = 3;
+    models.User         user         = 4;
+    results.Contacts    contacts     = 5;
+    results.Groups      groups       = 6;
+    results.ContactSync contact_sync = 7;
+  }
+}

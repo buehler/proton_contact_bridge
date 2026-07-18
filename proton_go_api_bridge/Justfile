@@ -1,0 +1,2 @@
+build_runner task="build":
+	dart run build_runner {{task}}

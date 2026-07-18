@@ -1,0 +1,26 @@
+group = 'ch.cbue.proton_go_api_bridge'
+version = '1.0'
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace = 'ch.cbue.proton_go_api_bridge'
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    defaultConfig {
+        minSdk = 23
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file('src/main/cpp/CMakeLists.txt')
+        }
+    }
+}

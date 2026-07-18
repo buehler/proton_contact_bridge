@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package commands;
+
+option go_package = "proton_go_api_bridge/native/protobuf/commands";
+
+import "models/models.proto";
+
+// Loggin a user in.
+message Login {
+  // Initialize from local storage if possible, otherwise state "unauthorized"
+  message Init {}
+
+  // Try to log in with username and password
+  message UsernamePassword {
+    string username = 1;
+    string password = 2;
+  }
+
+  // Submit human verification token if required to continue login process
+  message SubmitHumanVerification {
+    string token = 1;
+    string type  = 2;
+  }
+
+  // Submit TOTP code if required to continue login process
+  message TOTP {
+    string code = 1;
+  }
+
+  oneof method {
+    Init                    init                      = 1;
+    UsernamePassword        username_password         = 2;
+    SubmitHumanVerification submit_human_verification = 3;
+    TOTP                    totp                      = 4;
+  }
+}
+
+message Logout {}
+
+message GetUser {}
+
+message ContactSync {
+  message Start {}
+
+  // Check if there are local contact events available.
+  // Used to signal ios contact bridge enumeration.
+  message LocalEventsAvailable {}
+
+  oneof action {
+    Start                start                  = 1;
+    LocalEventsAvailable local_events_available = 2;
+  }
+}
+
+message Contacts {
+  message GetAll {}
+
+  message GetById {
+    string id = 1;
+  }
+
+  message Search {
+    string query = 1;
+  }
+
+  message ToggleFavorite {
+    string id = 1;
+  }
+
+  message GetFavorites {}
+
+  message UpsertContact {
+    models.Contact contact = 1;
+  }
+
+  message DeleteContact {
+    string id = 1;
+  }
+
+  oneof action {
+    GetAll         get_all         = 1;
+    GetById        get_by_id       = 2;
+    Search         search          = 3;
+    ToggleFavorite toggle_favorite = 4;
+    GetFavorites   get_favorites   = 5;
+    UpsertContact  upsert_contact  = 6;
+    DeleteContact  delete_contact  = 7;
+  }
+}
+
+message Groups {
+  message GetAll {}
+
+  message GetGroupContacts {
+    string group_name = 1;
+  }
+
+  oneof action {
+    GetAll           get_all            = 1;
+    GetGroupContacts get_group_contacts = 2;
+  }
+}

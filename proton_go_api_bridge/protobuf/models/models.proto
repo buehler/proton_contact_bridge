@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package models;
+
+option go_package = "proton_go_api_bridge/native/protobuf/models";
+
+message User {
+  string id          = 1;
+  string email       = 2;
+  string username    = 3;
+  string displayname = 4;
+}
+
+message Contact {
+  message Name {
+    string first_name = 1;
+    string last_name  = 2;
+  }
+
+  message Image {
+    string uri = 1;
+  }
+
+  message Email {
+    string          address = 1;
+    optional string type    = 2;
+  }
+
+  message Phone {
+    string          number = 1;
+    optional string type   = 2;
+  }
+
+  message Address {
+    string street  = 1;
+    string zip     = 2;
+    string city    = 3;
+    string region  = 4;
+    string country = 5;
+
+    optional string type = 6;
+  }
+
+  message Date {
+    string year  = 1;
+    string month = 2;
+    string day   = 3;
+  }
+
+  string          id             = 1;
+  string          formatted_name = 2;
+  optional Name   name           = 3;
+  bool is_favorite = 18;
+
+  optional string gender         = 14;
+
+  repeated Image  logos        = 15;
+  optional string title        = 9;
+  optional string organization = 10;
+
+  repeated Image photos = 17;
+
+  repeated Email   emails    = 4;
+  repeated Phone   phones    = 5;
+  repeated Address addresses = 6;
+
+  optional Date birthday    = 7;
+  optional Date anniversary = 8;
+
+  repeated string notes = 11;
+  repeated string urls  = 12;
+  repeated string roles = 13;
+
+  repeated string groups = 16;
+}
+
+message Group {
+  string name = 1;
+}

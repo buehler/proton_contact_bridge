@@ -1,0 +1,3 @@
+protobuf/
+/*.a
+/native.h

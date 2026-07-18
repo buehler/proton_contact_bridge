@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">KinCrypt Bond app icon</title>
+  <desc id="desc">Two interlocking ribbons around a protected center.</desc>
+  <defs>
+    <linearGradient id="background" x1="143" y1="82" x2="881" y2="942" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#123674"/>
+      <stop offset="1" stop-color="#07101C"/>
+    </linearGradient>
+    <linearGradient id="signal" x1="260" y1="235" x2="688" y2="690" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#29AFC5"/>
+      <stop offset="1" stop-color="#0789A8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#background)"/>
+  <path fill="url(#signal)" d="M420 676 277 533c-82-82-82-205 0-287s205-82 287 0l184 184-113 113-184-184c-20-20-51-20-72 0-20 20-20 51 0 72l154 154-113 91Z"/>
+  <path fill="#EDF5FF" d="m604 348 143 143c82 82 82 205 0 287s-205 82-287 0L276 594l113-113 184 184c20 20 51 20 72 0 20-20 20-51 0-72L491 439l113-91Z"/>
+  <circle cx="512" cy="512" r="51" fill="#123674"/>
+</svg>

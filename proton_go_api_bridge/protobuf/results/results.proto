@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package results;
+
+option go_package = "proton_go_api_bridge/native/protobuf/results";
+
+import "models/models.proto";
+
+message Success {}
+
+message Error {
+  string message = 1;
+}
+
+message Login {
+  message Authorized {}
+
+  message Unauthorized {}
+
+  message HumanVerificationRequired {
+    string uri = 1;
+  }
+
+  message TwoFactorRequired {
+    bool totp_enabled = 1;
+    // TODO: Fido2
+    // bool fido_enabled = 2;
+    // stuff fido_config = 3;
+  }
+
+  oneof outcome {
+    Authorized                authorized                  = 1;
+    Unauthorized              unauthorized                = 2;
+    HumanVerificationRequired human_verification_required = 3;
+    TwoFactorRequired         two_factor_required         = 4;
+  }
+}
+
+message ContactSync {
+  message LocalEventsAvailable {
+    bool has_events = 1;
+  }
+
+  oneof result {
+    LocalEventsAvailable local_events_available = 1;
+  }
+}
+
+message Contacts {
+  message GetAll {
+    repeated models.Contact contacts = 1;
+  }
+
+  message GetById {
+    optional models.Contact contact = 1;
+  }
+
+  message Search {
+    repeated models.Contact contacts = 1;
+  }
+
+  message GetFavorites {
+    repeated models.Contact contacts = 1;
+  }
+
+  message UpsertContact {
+    models.Contact contact = 1;
+  }
+
+  oneof result {
+    GetAll        get_all        = 1;
+    GetById       get_by_id      = 2;
+    Search        search         = 3;
+    GetFavorites  get_favorites  = 4;
+    UpsertContact upsert_contact = 5;
+  }
+}
+
+message Groups{
+  message GetAll {
+    repeated models.Group groups = 1;
+  }
+
+  message GroupContacts {
+    repeated models.Contact contacts = 1;
+  }
+
+  oneof result {
+    GetAll        get_all        = 1;
+    GroupContacts group_contacts = 2;
+  }
+}
