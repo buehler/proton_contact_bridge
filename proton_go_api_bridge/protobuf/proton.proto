@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package proton;
+
+option go_package = "proton_go_api_bridge/native/proto/proton";
+
+message Foobar {
+  bool   foo = 1;
+  string bar = 2;
+}

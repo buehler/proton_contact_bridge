@@ -91,8 +91,8 @@ class _ContactsPageState extends State<ContactsPage> {
 
   void _showMessage(BuildContext context, String message) {
     print('LAL?');
-    print(Add(1, 3));
-    print(nativeUpper('hello world'));
+    protobufTest();
+
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
