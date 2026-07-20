@@ -1,42 +1,39 @@
 import 'dart:ffi' as ffi;
 
-import 'package:proton_go_api_bridge/src/protobuf/proton/proton.pb.dart';
+import 'package:ffi/ffi.dart';
+import 'package:proton_go_api_bridge/src/protobuf/bridge/bridge.pb.dart';
 
 import 'src/bindings.g.dart';
 
-void protobufTest() {
-  GoByteBuffer? buffer;
-  try {
-    buffer = ExecThingy();
-    if (buffer.data == ffi.nullptr || buffer.len == 0) {
-      throw Exception('Failed to execute thingy');
-    }
-    final data = buffer.data.cast<ffi.Uint8>().asTypedList(buffer.len);
-    print('Received data: $data');
+export 'src/protobuf/bridge/bridge.pb.dart';
+export 'src/protobuf/commands/commands.pb.dart';
+export 'src/protobuf/results/results.pb.dart';
 
-    final fo = Foobar.fromBuffer(data);
-    print(fo);
-  } finally {
-    if (buffer != null) {
-      FreeByteBuffer(buffer);
+Future<Result> executeCommand(Command command) async {
+  // TODO: maybe use isolate.compute here
+  final result = using((Arena arena) {
+    final commandBytes = command.writeToBuffer();
+    final commandBuffer = arena<GoByteBuffer>();
+    final nativeDataPtr = arena<ffi.UnsignedChar>(commandBytes.length);
+    nativeDataPtr
+        .cast<ffi.Uint8>()
+        .asTypedList(commandBytes.length)
+        .setAll(0, commandBytes);
+    commandBuffer.ref.data = nativeDataPtr;
+    commandBuffer.ref.len = commandBytes.length;
+
+    final resultBuffer = ExecuteCommand(commandBuffer.ref);
+    try {
+      if (resultBuffer.data == ffi.nullptr || resultBuffer.len == 0) {
+        throw Exception('Failed to execute command');
+      }
+      final resultData = resultBuffer.data.cast<ffi.Uint8>().asTypedList(
+        resultBuffer.len,
+      );
+      return Result.fromBuffer(resultData);
+    } finally {
+      FreeByteBuffer(resultBuffer);
     }
-  }
+  });
+  return result;
 }
-
-// String nativeUpper(String input) {
-//   final inputPtr = input.toNativeUtf8().cast<ffi.Char>();
-//   ffi.Pointer<ffi.Char> outputPtr = ffi.nullptr;
-
-//   try {
-//     outputPtr = Upper(inputPtr);
-//     if (outputPtr == ffi.nullptr) {
-//       throw Exception('Failed to convert string to uppercase');
-//     }
-//     return outputPtr.cast<Utf8>().toDartString();
-//   } finally {
-//     malloc.free(inputPtr);
-//     if (outputPtr != ffi.nullptr) {
-//       FreeString(outputPtr);
-//     }
-//   }
-// }

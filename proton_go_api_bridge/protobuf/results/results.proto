@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package results;
+
+option go_package = "proton_go_api_bridge/native/protobuf/results";
+
+message Error {
+  string message = 1;
+}
+
+message LoginSuccess {
+  string          uid           = 1;
+  string          username      = 2;
+  string          access_token  = 3;
+  string          refresh_token = 4;
+  repeated string scopes        = 5;
+}
+
+message LoginHumanVerificationRequired {
+  string uri = 1;
+}
+
+message Login2FARequired {
+  bool totp_enabled  = 1;
+  bool fido2_enabled = 2;
+}

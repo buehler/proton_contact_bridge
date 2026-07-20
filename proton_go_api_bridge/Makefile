@@ -17,11 +17,11 @@ src/bridge.h: $(GO_FILES)
 lib/src/bindings.g.dart: src/bridge.h
 	dart run ffigen --config ffigen.yaml
 
-src/protobuf/proton:
-	mkdir -p src/protobuf/proton
+src/protobuf:
+	mkdir -p src/protobuf
 
-lib/src/protobuf/proton:
-	mkdir -p lib/src/protobuf/proton
+lib/src/protobuf:
+	mkdir -p lib/src/protobuf
 
 PROTO_FILES := $(shell find ./protobuf -type f -name '*.proto')
 PROTO_FILES := $(PROTO_FILES:./%=%)
@@ -32,9 +32,9 @@ DART_PROTO_FILES := $(addprefix lib/src/,$(patsubst %.proto,%.pb.dart,$(PROTO_FI
 protobuf: go dart
 
 .PHONY: go
-go:
-	protoc --proto_path=protobuf --go_out=src/protobuf/proton --go_opt=paths=source_relative $(PROTO_FILES)
+go: src/protobuf
+	protoc --proto_path=protobuf --go_out=src/protobuf --go_opt=module=proton_go_api_bridge/native/protobuf $(PROTO_FILES)
 
 .PHONY: dart
-dart:
-	protoc --proto_path=protobuf --dart_out=lib/src/protobuf/proton $(PROTO_FILES)
+dart: lib/src/protobuf
+	protoc --proto_path=protobuf --dart_out=lib/src/protobuf $(PROTO_FILES)

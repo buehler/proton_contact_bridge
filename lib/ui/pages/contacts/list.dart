@@ -89,9 +89,14 @@ class _ContactsPageState extends State<ContactsPage> {
     );
   }
 
-  void _showMessage(BuildContext context, String message) {
+  void _showMessage(BuildContext context, String message) async {
     print('LAL?');
-    protobufTest();
+    final r = await executeCommand(
+      Command(
+        login: Login(password: 'password', username: 'username'),
+      ),
+    );
+    print(r);
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
