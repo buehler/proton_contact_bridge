@@ -760,6 +760,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.2"
+  proton_go_api_bridge:
+    dependency: "direct main"
+    description:
+      path: proton_go_api_bridge
+      relative: true
+    source: path
+    version: "1.0.0"
   pub_semver:
     dependency: transitive
     description:

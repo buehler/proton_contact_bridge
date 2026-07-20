@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:proton_contact_bridge/ui/shells/main.dart';
+import 'package:proton_go_api_bridge/proton_go_api_bridge.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key});
@@ -89,6 +90,9 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   void _showMessage(BuildContext context, String message) {
+    print('LAL?');
+    print(Add(1, 3));
+    print(nativeUpper('hello world'));
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
