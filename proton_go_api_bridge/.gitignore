@@ -11,6 +11,7 @@
 migrate_working_dir/
 _obj
 *.g.dart
+*.freezed.dart
 *.o
 
 

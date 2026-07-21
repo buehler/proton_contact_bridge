@@ -8,16 +8,16 @@ import "commands/commands.proto";
 import "results/results.proto";
 
 message Command {
+  uint32 session_id = 1;
+
   oneof command {
-    commands.Login login = 1;
+    commands.Login login = 2;
   }
 }
 
 message Result {
   oneof response {
-    results.Error                          error                             = 1;
-    results.LoginSuccess                   login_success                     = 2;
-    results.LoginHumanVerificationRequired login_human_verification_required = 3;
-    results.Login2FARequired               login_2fa_required                = 4;
+    results.Error error = 1;
+    results.Login login = 2;
   }
 }

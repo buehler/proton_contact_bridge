@@ -5,6 +5,31 @@ package commands;
 option go_package = "proton_go_api_bridge/native/protobuf/commands";
 
 message Login {
-  string username = 1;
-  string password = 2;
+  message InitWithRefresh {
+    string uid           = 1;
+    string refresh_token = 2;
+  }
+
+  message UsernamePassword {
+    string username = 1;
+    string password = 2;
+  }
+
+  message WithHumanVerification {
+    string username = 1;
+    string password = 2;
+    string token    = 3;
+    string type     = 4;
+  }
+
+  message TOTP {
+    string code = 1;
+  }
+
+  oneof method {
+    UsernamePassword      username_password       = 1;
+    WithHumanVerification with_human_verification = 2;
+    TOTP                  totp                    = 3;
+    InitWithRefresh       init_with_refresh       = 4;
+  }
 }

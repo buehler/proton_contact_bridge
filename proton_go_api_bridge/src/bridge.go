@@ -10,13 +10,24 @@ typedef struct {
 */
 import "C"
 import (
-	"fmt"
+	"errors"
 	"proton_go_api_bridge/native/protobuf/bridge"
 	"proton_go_api_bridge/native/protobuf/results"
+	"proton_go_api_bridge/native/session"
 	"unsafe"
 
 	"google.golang.org/protobuf/proto"
 )
+
+//export CreateSession
+func CreateSession() uint32 {
+	return session.CreateSession()
+}
+
+//export CloseSession
+func CloseSession(sessionID uint32) {
+	session.CloseSession(sessionID)
+}
 
 //export ExecuteCommand
 func ExecuteCommand(rawCmd C.GoByteBuffer) C.GoByteBuffer {
@@ -30,6 +41,10 @@ func ExecuteCommand(rawCmd C.GoByteBuffer) C.GoByteBuffer {
 	err := proto.Unmarshal(cmdData, cmd)
 	if err != nil {
 		return wrapError(err)
+	}
+
+	if !session.SessionExists(cmd.SessionId) {
+		return wrapError(errors.New("session does not exist"))
 	}
 
 	result, err := executeCommand(cmd)
@@ -53,14 +68,6 @@ func ExecuteCommand(rawCmd C.GoByteBuffer) C.GoByteBuffer {
 //export FreeByteBuffer
 func FreeByteBuffer(buffer C.GoByteBuffer) {
 	C.free(unsafe.Pointer(buffer.data))
-}
-
-func executeCommand(cmd *bridge.Command) (*bridge.Result, error) {
-	switch command := cmd.Command.(type) {
-	// Add cases for different command types here
-	default:
-		return nil, fmt.Errorf("command %s not implemented", command)
-	}
 }
 
 func wrapError(err error) C.GoByteBuffer {

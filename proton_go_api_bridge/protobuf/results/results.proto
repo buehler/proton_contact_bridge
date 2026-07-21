@@ -8,19 +8,36 @@ message Error {
   string message = 1;
 }
 
-message LoginSuccess {
-  string          uid           = 1;
-  string          username      = 2;
-  string          access_token  = 3;
-  string          refresh_token = 4;
-  repeated string scopes        = 5;
-}
+message Login {
+  message Session {
+    string uid           = 1;
+    string user_id       = 2;
+    string access_token  = 3;
+    string refresh_token = 4;
+  }
 
-message LoginHumanVerificationRequired {
-  string uri = 1;
-}
+  message Success {
+    Session session = 1;
+  }
 
-message Login2FARequired {
-  bool totp_enabled  = 1;
-  bool fido2_enabled = 2;
+  message HumanVerificationRequired {
+    string uri = 1;
+  }
+
+  message TwoFactorRequired {
+    bool totp_enabled = 1;
+    // TODO: Fido2
+    // bool fido_enabled = 2;
+    // stuff fido_config = 3;
+    Session session = 4;
+  }
+
+  message TwoFactorSuccess {}
+
+  oneof outcome {
+    Success                   success                     = 1;
+    HumanVerificationRequired human_verification_required = 2;
+    TwoFactorRequired         two_factor_required         = 3;
+    TwoFactorSuccess          two_factor_success          = 4;
+  }
 }
