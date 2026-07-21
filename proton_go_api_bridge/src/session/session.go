@@ -15,7 +15,9 @@ type Session struct {
 
 func newSession() *Session {
 	return &Session{
-		manager: proton.New(),
+		manager: proton.New(
+			proton.WithAppVersion("Other"),
+		),
 	}
 }
 

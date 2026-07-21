@@ -22,7 +22,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
   RouterRefreshNotifier(this.ref) {
     ref.listen(protonAuthProvider, (_, _) {
       notifyListeners();
-    });
+    }, fireImmediately: true);
   }
 
   final Ref ref;
@@ -45,9 +45,17 @@ GoRouter router(Ref ref) => GoRouter(
       path: '/boot',
       builder: (context, state) => const BootPage(),
       redirect: (context, state) {
-        final authState = ref.read(protonAuthProvider).value;
+        final auth = ref.read(protonAuthProvider);
 
-        switch (authState) {
+        if (auth.isLoading) {
+          return null;
+        }
+
+        if (auth.hasError) {
+          return '/login';
+        }
+
+        switch (auth.value) {
           case Authenticated():
             return '/contacts';
           case Unknown():

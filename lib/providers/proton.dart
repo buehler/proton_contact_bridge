@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -32,6 +33,12 @@ class ProtonAuth extends _$ProtonAuth {
   Future<AuthState> build() async {
     final subscription = api.authStateStream.listen((authState) {
       state = AsyncData(authState);
+
+      if (authState case Authenticated(:final session)) {
+        unawaited(
+          _storage.write(key: _sessionKey, value: jsonEncode(session.toJson())),
+        );
+      }
     });
 
     ref.onDispose(subscription.cancel);

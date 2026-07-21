@@ -48,6 +48,11 @@ void main(List<String> args) async {
     final targetOS = input.config.code.targetOS;
     final targetArch = input.config.code.targetArchitecture;
 
+    // The hook cache does not automatically track files read by external
+    // tools such as `go build`. Declare the Go source tree so changes to the
+    // bridge invalidate this hook's cached native asset.
+    output.dependencies.add(input.packageRoot.resolve('src/'));
+
     final packageName = input.packageName;
     // Match ffigen's default @Native asset ID for lib/src/bindings.g.dart.
     final assetName = 'src/bindings.g.dart';
@@ -150,6 +155,8 @@ void main(List<String> args) async {
         '-Wl,-all_load',
         '-framework',
         'CoreFoundation',
+        '-framework',
+        'Security',
         '-o',
         outUri.toFilePath(),
         intermediateStaticUri.toFilePath(),

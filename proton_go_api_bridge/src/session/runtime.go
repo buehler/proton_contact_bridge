@@ -8,7 +8,9 @@ type Runtime struct {
 	sessions map[uint32]*Session
 }
 
-var runtime = &Runtime{}
+var runtime = &Runtime{
+	sessions: make(map[uint32]*Session),
+}
 
 func SessionExists(id uint32) bool {
 	runtime.mu.Lock()

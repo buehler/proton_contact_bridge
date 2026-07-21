@@ -97,7 +97,9 @@ final class ProtonApi {
   }
 
   void _handleLoginResult(Result result, {bool resetTmpCredentials = true}) {
-    if (_controller.value is! RequireHumanVerification && resetTmpCredentials) {
+    if (result.login.whichOutcome() == r.Login_Outcome.success ||
+        result.login.whichOutcome() == r.Login_Outcome.twoFactorSuccess ||
+        resetTmpCredentials) {
       _tmpUsername = '';
       _tmpPassword = '';
     }
