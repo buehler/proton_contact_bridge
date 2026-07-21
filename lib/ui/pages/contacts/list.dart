@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:proton_contact_bridge/ui/shells/main.dart';
-import 'package:proton_go_api_bridge/proton_go_api_bridge.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key});
@@ -90,14 +89,6 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   void _showMessage(BuildContext context, String message) async {
-    print('LAL?');
-    final r = await executeCommand(
-      Command(
-        login: Login(password: 'password', username: 'username'),
-      ),
-    );
-    print(r);
-
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));

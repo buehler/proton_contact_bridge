@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:proton_contact_bridge/providers/proton_auth.dart';
+import 'package:proton_contact_bridge/providers/proton.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class HumanVerificationPage extends ConsumerWidget {
@@ -35,8 +35,8 @@ class HumanVerificationPage extends ConsumerWidget {
       final result = parseMessage(message.message);
       if (result != null) {
         ref
-            .read(protonAuthProvider)
-            .submitHumanVerification(result.$1, result.$2);
+            .read(protonAuthProvider.notifier)
+            .submitHumanVerification(token: result.$1, method: result.$2);
       }
     }
 

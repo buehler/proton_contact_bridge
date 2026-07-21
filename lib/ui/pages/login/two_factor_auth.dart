@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:proton_contact_bridge/providers/proton_auth.dart';
+import 'package:proton_contact_bridge/providers/proton.dart';
 
 class TwoFactorAuthPage extends ConsumerWidget {
   TwoFactorAuthPage({super.key});
@@ -58,7 +58,7 @@ class TwoFactorAuthPage extends ConsumerWidget {
                     height: 48,
                     child: FilledButton.icon(
                       onPressed: () => ref
-                          .read(protonAuthProvider)
+                          .read(protonAuthProvider.notifier)
                           .submitTotp(_totpController.text),
                       icon: const Icon(Icons.arrow_forward),
                       label: const Text('Submit'),

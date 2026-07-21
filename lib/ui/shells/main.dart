@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:proton_contact_bridge/providers/proton_auth.dart';
+import 'package:proton_contact_bridge/providers/proton.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({
@@ -125,7 +125,7 @@ class _MainShellState extends ConsumerState<MainShell> {
               title: const Text('Logout'),
               onTap: () async {
                 Navigator.of(context).pop();
-                await ref.read(protonAuthProvider).logout();
+                await ref.read(protonAuthProvider.notifier).logout();
               },
             ),
           ],

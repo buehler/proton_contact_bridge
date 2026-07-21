@@ -15,5 +15,6 @@ sealed class AuthState with _$AuthState {
     AuthSession session, {
     required bool totp,
   }) = RequireTwoFactor;
+  // TODO: maybe session info should not reside in memory.
   const factory AuthState.authenticated(AuthSession session) = Authenticated;
 }

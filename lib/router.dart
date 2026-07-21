@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
-import 'package:proton_contact_bridge/proton/auth/auth_state.dart';
-import 'package:proton_contact_bridge/providers/proton_auth.dart';
+import 'package:proton_contact_bridge/providers/proton.dart';
 import 'package:proton_contact_bridge/ui/pages/boot.dart';
 import 'package:proton_contact_bridge/ui/pages/contacts/detail.dart';
 import 'package:proton_contact_bridge/ui/pages/contacts/edit.dart';
@@ -14,13 +13,14 @@ import 'package:proton_contact_bridge/ui/pages/login/human_verification.dart';
 import 'package:proton_contact_bridge/ui/pages/login/login_credentials.dart';
 import 'package:proton_contact_bridge/ui/pages/login/two_factor_auth.dart';
 import 'package:proton_contact_bridge/ui/shells/login.dart';
+import 'package:proton_go_api_bridge/proton_go_api_bridge.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'router.g.dart';
 
 class RouterRefreshNotifier extends ChangeNotifier {
   RouterRefreshNotifier(this.ref) {
-    ref.listen(protonAuthStateStreamProvider, (_, _) {
+    ref.listen(protonAuthProvider, (_, _) {
       notifyListeners();
     });
   }
@@ -45,12 +45,12 @@ GoRouter router(Ref ref) => GoRouter(
       path: '/boot',
       builder: (context, state) => const BootPage(),
       redirect: (context, state) {
-        final authState = ref.read(protonAuthStateStreamProvider).value;
+        final authState = ref.read(protonAuthProvider).value;
 
         switch (authState) {
-          case LoggedIn():
+          case Authenticated():
             return '/contacts';
-          case LoggedOut():
+          case Unknown():
             return '/login';
           default:
             return null;
@@ -63,9 +63,9 @@ GoRouter router(Ref ref) => GoRouter(
         GoRoute(
           path: '/login',
           redirect: (context, state) {
-            final authState = ref.read(protonAuthStateStreamProvider).value;
+            final authState = ref.read(protonAuthProvider).value;
 
-            if (authState is LoggedIn) {
+            if (authState is Authenticated) {
               return '/contacts';
             }
 
@@ -77,10 +77,7 @@ GoRouter router(Ref ref) => GoRouter(
               return '/login/2fa';
             }
 
-            if (authState == null ||
-                authState is Busy ||
-                authState is Initial ||
-                authState is LoggedOut) {
+            if (authState == null || authState is Unknown) {
               if (state.uri.path == '/login') {
                 return '/login/credentials';
               }
@@ -109,9 +106,9 @@ GoRouter router(Ref ref) => GoRouter(
     GoRoute(
       path: '/',
       redirect: (context, state) {
-        final authState = ref.read(protonAuthStateStreamProvider).value;
+        final authState = ref.read(protonAuthProvider).value;
 
-        if (authState is! LoggedIn) {
+        if (authState is! Authenticated) {
           return '/login';
         }
 

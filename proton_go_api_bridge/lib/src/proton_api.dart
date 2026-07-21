@@ -19,7 +19,7 @@ final class ProtonApi {
   factory ProtonApi() {
     final sessionId = CreateSession();
     final api = ProtonApi._(sessionId);
-    _finalizer.attach(ProtonApi._(sessionId), sessionId, detach: api);
+    _finalizer.attach(api, sessionId, detach: api);
     return api;
   }
 
@@ -33,7 +33,18 @@ final class ProtonApi {
     _controller.add(AuthState.unknown());
   }
 
-  Future<void> refresh(AuthSession session) async {}
+  Future<void> refresh(AuthSession session) async {
+    final result = await _executeCommand(
+      Command()
+        ..sessionId = sessionId
+        ..login = (c.Login()
+          ..initWithRefresh = (c.Login_InitWithRefresh()
+            ..uid = session.uid
+            ..refreshToken = session.refreshToken)),
+    );
+
+    _handleLoginResult(result);
+  }
 
   Future<void> login(String username, String password) async {
     final result = await _executeCommand(
@@ -44,13 +55,15 @@ final class ProtonApi {
             ..username = username
             ..password = password)),
     );
+    _tmpUsername = username;
+    _tmpPassword = password;
 
-    _handleLoginResult(result);
+    _handleLoginResult(result, resetTmpCredentials: false);
   }
 
+  var _tmpUsername = '';
+  var _tmpPassword = '';
   Future<void> submitHumanVerification({
-    required String username,
-    required String password,
     required String token,
     required String method,
   }) async {
@@ -59,8 +72,8 @@ final class ProtonApi {
         ..sessionId = sessionId
         ..login = (c.Login()
           ..withHumanVerification = (c.Login_WithHumanVerification()
-            ..username = username
-            ..password = password
+            ..username = _tmpUsername
+            ..password = _tmpPassword
             ..token = token
             ..type = method)),
     );
@@ -83,7 +96,12 @@ final class ProtonApi {
     _finalizer.detach(this);
   }
 
-  void _handleLoginResult(Result result) {
+  void _handleLoginResult(Result result, {bool resetTmpCredentials = true}) {
+    if (_controller.value is! RequireHumanVerification && resetTmpCredentials) {
+      _tmpUsername = '';
+      _tmpPassword = '';
+    }
+
     if (result.hasError()) {
       _controller.add(AuthState.error(Exception(result.error.message)));
       return;

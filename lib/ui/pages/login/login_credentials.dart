@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:proton_contact_bridge/providers/proton_auth.dart';
+import 'package:proton_contact_bridge/providers/proton.dart';
 
 class LoginCredentialsPage extends ConsumerWidget {
   LoginCredentialsPage({super.key});
@@ -72,10 +72,10 @@ class LoginCredentialsPage extends ConsumerWidget {
                     height: 48,
                     child: FilledButton.icon(
                       onPressed: () => ref
-                          .read(protonAuthProvider)
+                          .read(protonAuthProvider.notifier)
                           .login(
-                            username: _usernameController.text,
-                            password: _passwordController.text,
+                            _usernameController.text,
+                            _passwordController.text,
                           ),
                       icon: const Icon(Icons.login),
                       label: const Text('Sign in'),
