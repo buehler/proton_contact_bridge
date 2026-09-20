@@ -1,0 +1,315 @@
+definitions:
+  mac_builder: &mac_builder
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+  flutter_environment: &flutter_environment
+    flutter: stable
+    xcode: latest
+    cocoapods: default
+    java: 17
+
+  common_vars: &common_vars
+    PROTOC_DART_VERSION: "25.1.0"
+    PROTOC_VERSION: "36.1"
+    GO_VERSION: "1.27.1"
+    FLUTTER_XCODE_COMPILATION_CACHE_ENABLE_CACHING: "True"
+
+  apple_integration: &apple_integration
+    app_store_connect: Codemagic
+
+  common_cache: &common_cache
+    cache_paths:
+      - $HOME/.pub-cache
+      - $HOME/.gradle/caches
+      - $HOME/Library/Caches/CocoaPods
+      - $HOME/Library/Caches/org.swift.swiftpm
+      - $HOME/.local
+      - $HOME/go/pkg/mod
+      - $HOME/Library/Caches/go-build
+      - $HOME/Library/Developer/Xcode/DerivedData/CompilationCache.noindex
+
+  common_workflow: &common_workflow
+    <<: *mac_builder
+    integrations: *apple_integration
+    cache: *common_cache
+
+  preview_trigger: &preview_trigger
+    events:
+      - pull_request
+    branch_patterns:
+      - pattern: "release-please--*"
+        include: true
+        source: true
+    cancel_previous_builds: true
+
+  production_trigger: &production_trigger
+    events:
+      - tag
+    tag_patterns:
+      - pattern: "v+([0-9]).+([0-9]).+([0-9])"
+        include: true
+
+  app_store_upload: &app_store_upload
+    auth: integration
+
+  app_store_production: &app_store_production
+    <<: *app_store_upload
+    submit_to_app_store: true
+    release_type: AFTER_APPROVAL
+
+  google_play_internal: &google_play_internal
+    credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+    track: internal
+
+  google_play_production: &google_play_production
+    credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+    track: production
+
+  mobile_environment: &mobile_environment
+    <<: *flutter_environment
+    groups:
+      - ios_signing
+      - google_play
+    android_signing:
+      - KinCrypt KeyStore
+    vars:
+      <<: *common_vars
+      IOS_BUNDLE_ID: ch.cbue.protonContactBridge
+      IOS_EXTENSION_BUNDLE_ID: ch.cbue.protonContactBridge.KinCryptContactProvider
+
+  macos_environment: &macos_environment
+    <<: *flutter_environment
+    groups:
+      - macos_signing
+    vars:
+      <<: *common_vars
+      MACOS_BUNDLE_ID: ch.cbue.protonContactBridge
+      MACOS_APP_PATH: build/macos/Build/Products/Release/KinCrypt.app
+      MACOS_PACKAGE_PATH: build/macos/Build/Products/Release/KinCrypt.pkg
+
+  scripts:
+    - &get_dependencies
+      name: Get Flutter dependencies
+      script: |
+        set -e
+        flutter pub get
+        cd proton_go_api_bridge
+        flutter pub get
+        cd ..
+
+    - &prepare_generated_sources
+      name: Install native tools and generate sources
+      script: |
+        #!/bin/bash
+        set -euxo pipefail
+
+        echo "Install protoc"
+        PROTOC_INSTALL_ROOT="$HOME/.local"
+        PROTOC_ARCHIVE="/tmp/protoc-$PROTOC_VERSION-osx-aarch_64.zip"
+        if [[ ! -x "$PROTOC_INSTALL_ROOT/bin/protoc" ]] || \
+          [[ "$($PROTOC_INSTALL_ROOT/bin/protoc --version)" != "libprotoc $PROTOC_VERSION" ]]; then
+          curl --fail --location --retry 3 \
+            --output "$PROTOC_ARCHIVE" \
+            "https://github.com/protocolbuffers/protobuf/releases/download/v$PROTOC_VERSION/protoc-$PROTOC_VERSION-osx-aarch_64.zip"
+          unzip -oq "$PROTOC_ARCHIVE" -d "$PROTOC_INSTALL_ROOT"
+        fi
+
+        echo "Install Go"
+        GO_INSTALL_ROOT="$HOME/.local/go/$GO_VERSION"
+        GO_ARCHIVE="/tmp/go$GO_VERSION.darwin-arm64.tar.gz"
+        if [[ ! -x "$GO_INSTALL_ROOT/bin/go" ]]; then
+          mkdir -p "$GO_INSTALL_ROOT"
+          curl --fail --location --retry 3 \
+            --output "$GO_ARCHIVE" \
+            "https://go.dev/dl/go$GO_VERSION.darwin-arm64.tar.gz"
+          tar -C "$GO_INSTALL_ROOT" --strip-components=1 -xzf "$GO_ARCHIVE"
+        fi
+
+        export GOPATH="$HOME/go"
+        export PATH="$PROTOC_INSTALL_ROOT/bin:$GO_INSTALL_ROOT/bin:$GOPATH/bin:$HOME/.pub-cache/bin:$PATH"
+        {
+          echo "GOPATH=$GOPATH"
+          echo "PATH=$PATH"
+        } >> "$CM_ENV"
+
+        protoc --version
+        go version
+
+        echo "Install Protobuf generators"
+        go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+        dart pub global activate protoc_plugin "$PROTOC_DART_VERSION"
+
+        echo "Generate native code"
+        cd proton_go_api_bridge
+        make
+        dart run build_runner build
+        cd ..
+
+        echo "Generate application code"
+        dart run build_runner build
+
+    - &initialize_apple_keychain
+      name: Initialize Apple signing keychain
+      script: keychain initialize
+
+    - &fetch_ios_signing_files
+      name: Fetch or create iOS App Store signing files
+      script: |
+        set -e
+        app-store-connect fetch-signing-files "$IOS_BUNDLE_ID" \
+          --type IOS_APP_STORE \
+          --create
+        app-store-connect fetch-signing-files "$IOS_EXTENSION_BUNDLE_ID" \
+          --type IOS_APP_STORE \
+          --create
+
+    - &fetch_macos_signing_files
+      name: Fetch or create Mac App Store signing files
+      script: |
+        app-store-connect fetch-signing-files "$MACOS_BUNDLE_ID" \
+          --platform MAC_OS \
+          --type MAC_APP_STORE \
+          --create
+
+    - &fetch_macos_installer_certificate
+      name: Fetch or create Mac installer certificate
+      script: |
+        app-store-connect certificates list \
+          --type MAC_INSTALLER_DISTRIBUTION \
+          --save || \
+        app-store-connect certificates create \
+          --type MAC_INSTALLER_DISTRIBUTION \
+          --save
+
+    - &install_apple_certificates
+      name: Install Apple signing certificates
+      script: keychain add-certificates
+
+    - &apply_apple_profiles
+      name: Apply Apple provisioning profiles
+      script: xcode-project use-profiles
+
+    - &build_ios
+      name: Build signed iOS IPA
+      script: |
+        flutter build ipa --release \
+          --build-number="$PROJECT_BUILD_NUMBER" \
+          --export-options-plist=/Users/builder/export_options.plist
+
+    - &build_android
+      name: Build signed Android app bundle
+      script: |
+        flutter build appbundle --release \
+          --build-number="$PROJECT_BUILD_NUMBER"
+
+    - &build_macos
+      name: Build signed macOS application
+      script: |
+        flutter build macos --release \
+          --build-number="$PROJECT_BUILD_NUMBER"
+
+    - &package_macos
+      name: Create signed Mac App Store package
+      script: |
+        set -euo pipefail
+        INSTALLER_CERTIFICATE_NAME="$(
+          keychain list-certificates | jq -r '
+            .[]
+            | select(.common_name | test("Mac Installer Distribution|3rd Party Mac Developer Installer"))
+            | .common_name
+          ' | head -1
+        )"
+        test -n "$INSTALLER_CERTIFICATE_NAME"
+
+        TEMP_PACKAGE_DIRECTORY="$(mktemp -d)"
+        xcrun productbuild \
+          --component "$CM_BUILD_DIR/$MACOS_APP_PATH" \
+          /Applications/ \
+          "$TEMP_PACKAGE_DIRECTORY/unsigned.pkg"
+        xcrun productsign \
+          --sign "$INSTALLER_CERTIFICATE_NAME" \
+          "$TEMP_PACKAGE_DIRECTORY/unsigned.pkg" \
+          "$CM_BUILD_DIR/$MACOS_PACKAGE_PATH"
+
+  mobile_scripts: &mobile_scripts
+    - *get_dependencies
+    - *prepare_generated_sources
+    - *initialize_apple_keychain
+    - *fetch_ios_signing_files
+    - *install_apple_certificates
+    - *apply_apple_profiles
+    - *build_ios
+    - *build_android
+
+  macos_scripts: &macos_scripts
+    - *get_dependencies
+    - *prepare_generated_sources
+    - *initialize_apple_keychain
+    - *fetch_macos_signing_files
+    - *fetch_macos_installer_certificate
+    - *install_apple_certificates
+    - *apply_apple_profiles
+    - *build_macos
+    - *package_macos
+
+  mobile_artifacts: &mobile_artifacts
+    - build/ios/ipa/*.ipa
+    - build/app/outputs/bundle/release/*.aab
+    - build/app/outputs/mapping/release/mapping.txt
+    - /tmp/xcodebuild_logs/*.log
+
+  macos_artifacts: &macos_artifacts
+    - build/macos/Build/Products/Release/*.pkg
+    - /tmp/xcodebuild_logs/*.log
+
+  preview_mobile_publishing: &preview_mobile_publishing
+    app_store_connect: *app_store_upload
+    google_play: *google_play_internal
+
+  preview_macos_publishing: &preview_macos_publishing
+    app_store_connect: *app_store_upload
+
+  production_mobile_publishing: &production_mobile_publishing
+    app_store_connect: *app_store_production
+    google_play: *google_play_production
+
+  production_macos_publishing: &production_macos_publishing
+    app_store_connect: *app_store_production
+
+workflows:
+  preview-release-mobile:
+    name: Preview Release - Mobile
+    <<: *common_workflow
+    environment: *mobile_environment
+    triggering: *preview_trigger
+    scripts: *mobile_scripts
+    artifacts: *mobile_artifacts
+    publishing: *preview_mobile_publishing
+
+  preview-release-macos:
+    name: Preview Release - MacOS
+    <<: *common_workflow
+    environment: *macos_environment
+    triggering: *preview_trigger
+    scripts: *macos_scripts
+    artifacts: *macos_artifacts
+    publishing: *preview_macos_publishing
+
+  production-release-mobile:
+    name: Production Release - Mobile
+    <<: *common_workflow
+    environment: *mobile_environment
+    triggering: *production_trigger
+    scripts: *mobile_scripts
+    artifacts: *mobile_artifacts
+    publishing: *production_mobile_publishing
+
+  production-release-macos:
+    name: Production Release - MacOS
+    <<: *common_workflow
+    environment: *macos_environment
+    triggering: *production_trigger
+    scripts: *macos_scripts
+    artifacts: *macos_artifacts
+    publishing: *production_macos_publishing
