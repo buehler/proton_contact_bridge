@@ -76,4 +76,5 @@ func Teardown() {
 	_ = os.Remove(dbPath + "-journal")
 
 	Instance = nil
+	DatabaseError = fmt.Errorf("database not initialized")
 }
