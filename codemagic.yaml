@@ -22,12 +22,7 @@ definitions:
     cache_paths:
       - $HOME/.pub-cache
       - $HOME/.gradle/caches
-      - $HOME/Library/Caches/CocoaPods
-      - $HOME/Library/Caches/org.swift.swiftpm
-      - $HOME/.local
-      - $HOME/go/pkg/mod
-      - $HOME/Library/Caches/go-build
-      - $HOME/Library/Developer/Xcode/DerivedData/CompilationCache.noindex
+      - $HOME/.gradle/wrapper
 
   common_workflow: &common_workflow
     <<: *mac_builder
