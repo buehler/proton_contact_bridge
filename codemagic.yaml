@@ -154,10 +154,12 @@ definitions:
         set -e
         app-store-connect fetch-signing-files "$IOS_BUNDLE_ID" \
           --type IOS_APP_STORE \
-          --create
+          --create \
+          --delete-stale-profiles
         app-store-connect fetch-signing-files "$IOS_EXTENSION_BUNDLE_ID" \
           --type IOS_APP_STORE \
-          --create
+          --create \
+          --delete-stale-profiles
 
     - &fetch_macos_signing_files
       name: Fetch or create Mac App Store signing files
@@ -165,7 +167,8 @@ definitions:
         app-store-connect fetch-signing-files "$MACOS_BUNDLE_ID" \
           --platform MAC_OS \
           --type MAC_APP_STORE \
-          --create
+          --create \
+          --delete-stale-profiles
 
     - &fetch_macos_installer_certificate
       name: Fetch or create Mac installer certificate
