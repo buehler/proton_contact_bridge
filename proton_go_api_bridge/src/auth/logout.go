@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"proton_go_api_bridge/native/database"
 	"proton_go_api_bridge/native/storage"
 )
 
@@ -41,11 +40,6 @@ func (a *AuthManager) Logout(ctx context.Context) error {
 	a.credentialRejected = false
 	a.credentialSuperseded = false
 	a.credentialMu.Unlock()
-
-	defer func() {
-		slog.DebugContext(ctx, "Reset database")
-		database.Reset()
-	}()
 
 	if err != nil && !errors.Is(err, storage.ErrKeyNotFound) {
 		slog.ErrorContext(ctx, "delete stored secrets", slog.Any("error", err))

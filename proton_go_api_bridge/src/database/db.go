@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"proton_go_api_bridge/native/database/migrations"
 
 	"gorm.io/driver/sqlite"
@@ -63,17 +62,16 @@ func Teardown() {
 	}
 	slog.Debug("database closed")
 
-	dbPath := filepath.Join(basePathCache, "contact_bridge.db")
-	if err = os.Remove(dbPath); err != nil && !os.IsNotExist(err) {
+	if err = os.Remove(basePathCache); err != nil && !os.IsNotExist(err) {
 		slog.Error("delete database", slog.Any("error", err))
 		DatabaseError = err
 		return
 	}
-	slog.Info("deleted database", slog.String("path", dbPath))
+	slog.Info("deleted database", slog.String("path", basePathCache))
 
-	_ = os.Remove(dbPath + "-shm")
-	_ = os.Remove(dbPath + "-wal")
-	_ = os.Remove(dbPath + "-journal")
+	_ = os.Remove(basePathCache + "-shm")
+	_ = os.Remove(basePathCache + "-wal")
+	_ = os.Remove(basePathCache + "-journal")
 
 	Instance = nil
 	DatabaseError = fmt.Errorf("database not initialized")
