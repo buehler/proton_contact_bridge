@@ -91,6 +91,7 @@ class ProtonContactBridgeApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       routerConfig: ref.watch(routerProvider),
       themeMode: ref.watch(themeProvider).value ?? ThemeMode.dark,
       theme: ThemeData(extensions: [kinCryptLightTheme]),
