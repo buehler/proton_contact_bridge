@@ -215,6 +215,14 @@ func fieldWithType(value string, fieldType *string) *vcard.Field {
 
 func setDate(card vcard.Card, key string, date *pmodels.Contact_Date) {
 	if date != nil {
-		card.SetValue(key, date.Year+date.Month+date.Day)
+		month := date.Month
+		if len(month) == 1 {
+			month = "0" + month
+		}
+		day := date.Day
+		if len(day) == 1 {
+			day = "0" + day
+		}
+		card.SetValue(key, date.Year+month+day)
 	}
 }

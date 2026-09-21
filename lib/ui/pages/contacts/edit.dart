@@ -1135,9 +1135,9 @@ class _ContactEditPageState extends ConsumerState<ContactEditPage> {
     );
     if (picked == null || !mounted) return;
     final value = ContactDate(
-      year: '${picked.year}',
-      month: '${picked.month}',
-      day: '${picked.day}',
+      year: picked.year.toString().padLeft(4, '0'),
+      month: picked.month.toString().padLeft(2, '0'),
+      day: picked.day.toString().padLeft(2, '0'),
     );
     _mutateDraft(() {
       if (isBirthday) {
