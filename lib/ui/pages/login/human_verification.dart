@@ -20,8 +20,7 @@ class HumanVerificationPage extends ConsumerStatefulWidget {
       _HumanVerificationPageState();
 }
 
-class _HumanVerificationPageState
-    extends ConsumerState<HumanVerificationPage> {
+class _HumanVerificationPageState extends ConsumerState<HumanVerificationPage> {
   static const _verificationError =
       'Verification was not accepted. Reload the challenge and try again.';
 
@@ -283,7 +282,7 @@ class _HumanVerificationPageState
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Container(
-                  height: 440,
+                  height: 400,
                   clipBehavior: Clip.antiAlias,
                   decoration: BoxDecoration(
                     color: context.theme.surfaceSoft,
@@ -299,9 +298,7 @@ class _HumanVerificationPageState
                           children: [
                             IgnorePointer(
                               ignoring: _loading || _submitting,
-                              child: WebViewWidget(
-                                controller: _controller!,
-                              ),
+                              child: WebViewWidget(controller: _controller!),
                             ),
                             if (_loading || _submitting)
                               ColoredBox(
