@@ -171,14 +171,32 @@ definitions:
           --delete-stale-profiles
 
     - &fetch_macos_installer_certificate
-      name: Fetch or create Mac installer certificate
+      name: Fetch or create and install Mac installer certificate
       script: |
+        #!/bin/bash
+        set -euo pipefail
+
+        INSTALLER_CERTIFICATES_DIRECTORY="$(mktemp -d)"
         app-store-connect certificates list \
           --type MAC_INSTALLER_DISTRIBUTION \
-          --save || \
-        app-store-connect certificates create \
-          --type MAC_INSTALLER_DISTRIBUTION \
+          --certificates-dir "$INSTALLER_CERTIFICATES_DIRECTORY" \
           --save
+
+        # Listing succeeds even when no certificate matches CERTIFICATE_PRIVATE_KEY.
+        if ! compgen -G "$INSTALLER_CERTIFICATES_DIRECTORY/*.p12" > /dev/null; then
+          app-store-connect certificates create \
+            --type MAC_INSTALLER_DISTRIBUTION \
+            --certificates-dir "$INSTALLER_CERTIFICATES_DIRECTORY" \
+            --save
+        fi
+
+        if ! compgen -G "$INSTALLER_CERTIFICATES_DIRECTORY/*.p12" > /dev/null; then
+          echo "No Mac Installer Distribution certificate was saved for CERTIFICATE_PRIVATE_KEY." >&2
+          exit 1
+        fi
+
+        keychain add-certificates \
+          --certificate "$INSTALLER_CERTIFICATES_DIRECTORY/*.p12"
 
     - &install_apple_certificates
       name: Install Apple signing certificates
@@ -213,12 +231,16 @@ definitions:
         set -euo pipefail
         INSTALLER_CERTIFICATE_NAME="$(
           keychain list-certificates | jq -r '
-            .[]
-            | select(.common_name | test("Mac Installer Distribution|3rd Party Mac Developer Installer"))
-            | .common_name
-          ' | head -1
+            [.[]
+              | select(.common_name | test("Mac Installer Distribution|3rd Party Mac Developer Installer"))
+              | .common_name]
+            | .[0] // empty
+          '
         )"
-        test -n "$INSTALLER_CERTIFICATE_NAME"
+        if [[ -z "$INSTALLER_CERTIFICATE_NAME" ]]; then
+          echo "Mac Installer Distribution certificate is missing from the build keychain; cannot sign the .pkg." >&2
+          exit 1
+        fi
 
         TEMP_PACKAGE_DIRECTORY="$(mktemp -d)"
         xcrun productbuild \
