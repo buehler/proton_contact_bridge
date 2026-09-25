@@ -45,9 +45,29 @@ final class ContactProviderChannel {
             "received method call: \(call.method, privacy: .public)"
         )
         switch call.method {
-        case "signalEnumerator":
+        case "resetContactProvider":
             Task {
                 do {
+                    try await ContactProviderSignaler.reset()
+                    result(nil)
+                } catch {
+                    Self.logger.error(
+                        "Contact provider reset failed: \(error.localizedDescription, privacy: .public)"
+                    )
+                    result(
+                        FlutterError(
+                            code: "reset_failed",
+                            message: error.localizedDescription,
+                            details: nil
+                        )
+                    )
+                }
+            }
+        case "performLocalContactSync":
+            Task {
+                do {
+                    // TODO: check if local events available.
+                    //  = call.argument("force"); bool arg if forced sync. (e.g. if no events availabie)
                     try await ContactProviderSignaler.signalContactProvider()
                     result(nil)
                 } catch {
@@ -56,7 +76,7 @@ final class ContactProviderChannel {
                     )
                     result(
                         FlutterError(
-                            code: "signal_failed",
+                            code: "sync_failed",
                             message: error.localizedDescription,
                             details: nil
                         )

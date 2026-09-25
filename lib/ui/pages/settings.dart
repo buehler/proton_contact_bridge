@@ -1,7 +1,11 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:proton_contact_bridge/providers/channels.dart';
 import 'package:proton_contact_bridge/providers/proton.dart';
 import 'package:proton_contact_bridge/providers/settings.dart';
 import 'package:proton_contact_bridge/providers/ui.dart';
@@ -147,6 +151,30 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
           ),
+          if (Platform.isIOS)
+            KinCryptSection(
+              title: 'Contact Provider',
+              children: [
+                KinCryptButton(
+                  label: 'Force provider sync',
+                  style: KinCryptButtonStyle.secondary,
+                  onPressed: () {
+                    ref
+                        .read(contactProviderChannelProvider)
+                        .performLocalContactSync(true);
+                  },
+                ),
+                KinCryptButton(
+                  label: 'Reset contact provider',
+                  style: KinCryptButtonStyle.dangerSoft,
+                  onPressed: () {
+                    ref
+                        .read(contactProviderChannelProvider)
+                        .resetContactProvider();
+                  },
+                ),
+              ],
+            ),
           KinCryptSection(
             title: 'Diagnostics',
             children: [
@@ -212,6 +240,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     setState(() => _loggingOut = true);
     try {
+      unawaited(
+        ref.read(contactProviderChannelProvider).resetContactProvider(),
+      );
       await ref.read(protonAuthProvider.notifier).logout();
       if (mounted) context.go('/login');
     } catch (_) {

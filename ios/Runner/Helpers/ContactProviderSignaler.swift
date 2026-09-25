@@ -14,6 +14,22 @@ enum ContactProviderSignaler {
         category: "ContactProviderSignaler"
     )
     
+    static func reset() async throws {
+        let manager = try ContactProviderManager()
+        
+        if !manager.isEnabled {
+            Self.logger.info("Enabling contact provider")
+            try await manager.enable()
+        }
+        
+        guard manager.isEnabled else {
+            throw ContactProviderError.deniedByUser
+        }
+        
+        Self.logger.info("Reset the contact provider enumerator")
+        try await manager.reset()
+    }
+    
     static func signalContactProvider() async throws {
         let manager = try ContactProviderManager()
         

@@ -62,7 +62,7 @@ final class ContactNotifier extends _$ContactNotifier {
     final keepAlive = ref.keepAlive();
     try {
       final api = await ref.read(protonApiProvider.future);
-      final cpService = await ref.read(contactProviderChannelProvider.future);
+      final cpService = ref.read(contactProviderChannelProvider);
       final updatedContact = await api.upsertContact(contact);
       for (var p in _contactRelatedProviders) {
         ref.invalidate(p);
@@ -70,7 +70,7 @@ final class ContactNotifier extends _$ContactNotifier {
       if (contact.id.isNotEmpty) {
         state = AsyncData(updatedContact);
       }
-      unawaited(cpService.signalIfRequired());
+      unawaited(cpService.performLocalContactSync());
       return updatedContact;
     } finally {
       keepAlive.close();
@@ -83,13 +83,13 @@ final class ContactNotifier extends _$ContactNotifier {
         if (contact == null) return;
 
         final api = await ref.read(protonApiProvider.future);
-        final cpService = await ref.read(contactProviderChannelProvider.future);
+        final cpService = ref.read(contactProviderChannelProvider);
         await api.deleteContact(contact.id);
         ref.invalidateSelf();
         for (var p in _contactRelatedProviders) {
           ref.invalidate(p);
         }
-        unawaited(cpService.signalIfRequired());
+        unawaited(cpService.performLocalContactSync());
       },
       orElse: () {},
     );

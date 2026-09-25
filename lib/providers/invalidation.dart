@@ -15,8 +15,8 @@ final _contactRelatedProviders = [
 ];
 
 @Riverpod(keepAlive: true)
-void syncStatusProviderInvalidation(Ref ref) async {
-  final cpService = await ref.watch(contactProviderChannelProvider.future);
+void syncStatusProviderInvalidation(Ref ref) {
+  final cpService = ref.watch(contactProviderChannelProvider);
   ContactSyncState? previous;
   ref.listen(contactSyncStateProvider, (prev, next) async {
     final current = next.value;
@@ -26,7 +26,7 @@ void syncStatusProviderInvalidation(Ref ref) async {
       for (var p in _contactRelatedProviders) {
         ref.invalidate(p);
       }
-      await cpService.signalIfRequired();
+      await cpService.performLocalContactSync();
     }
 
     previous = current;

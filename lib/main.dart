@@ -1,11 +1,8 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logging/logging.dart' as dart_log;
 import 'package:proton_contact_bridge/logger.dart';
-import 'package:proton_contact_bridge/providers/channels.dart';
 import 'package:proton_contact_bridge/providers/invalidation.dart';
 import 'package:proton_contact_bridge/providers/sync.dart';
 import 'package:proton_contact_bridge/providers/ui.dart';
@@ -84,10 +81,6 @@ class ProtonContactBridgeApp extends ConsumerWidget {
     ref.watch(wakelockProvider);
     ref.watch(syncStatusProviderInvalidationProvider);
     ref.watch(syncTriggerProvider);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final service = await ref.read(contactProviderChannelProvider.future);
-      unawaited(service.signalIfRequired());
-    });
 
     return MaterialApp.router(
       title: 'Flutter Demo',
