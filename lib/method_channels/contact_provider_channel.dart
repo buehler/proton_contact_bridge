@@ -11,7 +11,7 @@ final class ContactProviderChannel {
   );
 
   Future<void> resetContactProvider() async {
-    if (!Platform.isIOS) {
+    if (!Platform.isIOS && !Platform.isAndroid) {
       _logger.fine(
         'Skipping resetContactProvider on non-iOS/non-Android platform',
       );
@@ -27,7 +27,7 @@ final class ContactProviderChannel {
   }
 
   Future<void> performLocalContactSync([bool force = false]) async {
-    if (!Platform.isIOS) {
+    if (!Platform.isIOS && !Platform.isAndroid) {
       _logger.fine(
         'Skipping performLocalContactSync on non-iOS/non-Android platform',
       );
@@ -38,7 +38,7 @@ final class ContactProviderChannel {
       _logger.fine('Performing local contact sync');
       await _channel.invokeMethod('performLocalContactSync', {'force': force});
     } on PlatformException catch (e) {
-      _logger.severe('Failed to signal enumerator: ${e.message}');
+      _logger.severe('Failed to perform local contact sync: ${e.message}');
     }
   }
 }

@@ -151,7 +151,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               ],
             ),
           ),
-          if (Platform.isIOS)
+          if (Platform.isIOS || Platform.isAndroid)
             KinCryptSection(
               title: 'Contact Provider',
               children: [
