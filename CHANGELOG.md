@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/buehler/proton_contact_bridge/compare/v1.0.0...v1.1.0) (2026-09-26)
+
+
+### Features
+
+* **android:** add local contact provider for the phone ([0f110f8](https://github.com/buehler/proton_contact_bridge/commit/0f110f80339a6f1ec84381b362d5f71caa986166))
+* **ios:** add possibility to reset/force-sync contact provider ([75812d0](https://github.com/buehler/proton_contact_bridge/commit/75812d099e160fc8d819b5e19897b8289687a247))
+
 ## 1.0.0 (2026-09-21)
 
 
