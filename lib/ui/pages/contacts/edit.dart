@@ -453,6 +453,7 @@ class _ContactEditPageState extends ConsumerState<ContactEditPage> {
             key: ValueKey(draft.id),
             draft: draft,
             index: index,
+            canReorder: _addresses.length > 1,
             onRemove: () =>
                 _mutateDraft(() => _addresses.removeAt(index).dispose()),
           );
@@ -579,6 +580,7 @@ class _ContactEditPageState extends ConsumerState<ContactEditPage> {
             key: ValueKey(draft.id),
             draft: draft,
             index: index,
+            canReorder: _additionalFields.length > 1,
             onPickMedia: draft.kind == _AdditionalKind.logo
                 ? () async {
                     final uri = await _pickMediaUri();
@@ -614,7 +616,7 @@ class _ContactEditPageState extends ConsumerState<ContactEditPage> {
               child: _CompoundCard(
                 header: Row(
                   children: [
-                    _DragHandle(index: index),
+                    _DragHandle(index: index, enabled: _notes.length > 1),
                     const Spacer(),
                     FocusTraversalOrder(
                       order: const NumericFocusOrder(2),
@@ -1208,13 +1210,10 @@ class _ContactEditPageState extends ConsumerState<ContactEditPage> {
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      ReorderableDragStartListener(
+                                      _DragHandle(
                                         key: Key('contact-photo-drag-$index'),
                                         index: index,
-                                        child: const Padding(
-                                          padding: EdgeInsets.all(12),
-                                          child: Icon(Icons.drag_handle),
-                                        ),
+                                        enabled: _photos.length > 1,
                                       ),
                                       KinCryptIconButton(
                                         semanticLabel: 'Remove photo',
@@ -1376,12 +1375,7 @@ class _ContactEditPageState extends ConsumerState<ContactEditPage> {
       ..._groups,
       ...loadedGroups.map((group) => group.name),
     ];
-    final allNames = <String>[];
-    final seen = <String>{};
-    for (final value in available) {
-      final name = value.trim();
-      if (name.isNotEmpty && seen.add(name)) allNames.add(name);
-    }
+    final allNames = _normalizedGroups(available);
     final selected = _normalizedGroups(_groups);
     var searchQuery = '';
 
@@ -1427,35 +1421,6 @@ class _ContactEditPageState extends ConsumerState<ContactEditPage> {
                       hint: 'Search groups',
                     ),
                     const SizedBox(height: 12),
-                    if (selected.isNotEmpty) ...[
-                      const KinCryptText(
-                        'Selected',
-                        variant: KinCryptTextVariant.meta,
-                      ),
-                      SizedBox(
-                        height: (selected.length * 48)
-                            .clamp(48, 180)
-                            .toDouble(),
-                        child: ReorderableListView.builder(
-                          proxyDecorator: (child, index, animation) =>
-                              _reorderProxyDecorator(context, child, animation),
-                          itemCount: selected.length,
-                          onReorderItem: (oldIndex, newIndex) => setSheetState(
-                            () => _reorder(selected, oldIndex, newIndex),
-                          ),
-                          itemBuilder: (context, index) => KinCryptListRow(
-                            key: ValueKey('selected-${selected[index]}'),
-                            leading: const Icon(Icons.check_box),
-                            title: selected[index],
-                            trailing: const Icon(Icons.drag_handle),
-                            compact: true,
-                            onTap: () =>
-                                setSheetState(() => selected.removeAt(index)),
-                          ),
-                        ),
-                      ),
-                      const Divider(),
-                    ],
                     Expanded(
                       child: ListView.builder(
                         itemCount: filtered.length,
@@ -1474,6 +1439,11 @@ class _ContactEditPageState extends ConsumerState<ContactEditPage> {
                             selected: checked,
                             leading: Checkbox(
                               value: checked,
+                              activeColor: context.theme.brandVault,
+                              checkColor: context.theme.onBrand,
+                              hoverColor: context.theme.brandVault.withValues(
+                                alpha: 0.1,
+                              ),
                               onChanged: (_) => toggle(),
                             ),
                             onTap: toggle,
@@ -1483,13 +1453,19 @@ class _ContactEditPageState extends ConsumerState<ContactEditPage> {
                     ),
                     const Divider(),
                     KinCryptListRow(
-                      leading: const Icon(LucideIcons.plus),
+                      leading: Icon(
+                        LucideIcons.plus,
+                        color: context.theme.brandVault,
+                      ),
                       title: 'Create new group',
                       onTap: () async {
                         final group = await _requestGroupName();
                         if (group == null) return;
                         setSheetState(() {
-                          if (!allNames.contains(group)) allNames.add(group);
+                          if (!allNames.contains(group)) {
+                            allNames.add(group);
+                            allNames.sort(_compareGroupNames);
+                          }
                           if (!selected.contains(group)) selected.add(group);
                         });
                       },
@@ -1758,7 +1734,7 @@ class _TypedSection extends StatelessWidget {
               child: _CompoundCard(
                 header: Row(
                   children: [
-                    _DragHandle(index: index),
+                    _DragHandle(index: index, enabled: drafts.length > 1),
                     SizedBox(width: context.theme.spaceXs),
                     Expanded(
                       child: FocusTraversalOrder(
@@ -1855,7 +1831,7 @@ class _PhoneSection extends StatelessWidget {
               child: _CompoundCard(
                 header: Row(
                   children: [
-                    _DragHandle(index: index),
+                    _DragHandle(index: index, enabled: drafts.length > 1),
                     SizedBox(width: context.theme.spaceXs),
                     Expanded(
                       child: FocusTraversalOrder(
@@ -2226,11 +2202,13 @@ class _AddressEditor extends StatelessWidget {
     super.key,
     required this.draft,
     required this.index,
+    required this.canReorder,
     required this.onRemove,
   });
 
   final _AddressDraft draft;
   final int index;
+  final bool canReorder;
   final VoidCallback onRemove;
 
   @override
@@ -2242,7 +2220,7 @@ class _AddressEditor extends StatelessWidget {
         child: _CompoundCard(
           header: Row(
             children: [
-              _DragHandle(index: index),
+              _DragHandle(index: index, enabled: canReorder),
               SizedBox(width: context.theme.spaceXs),
               Expanded(
                 child: FocusTraversalOrder(
@@ -2332,12 +2310,14 @@ class _AdditionalFieldEditor extends StatelessWidget {
     super.key,
     required this.draft,
     required this.index,
+    required this.canReorder,
     required this.onRemove,
     this.onPickMedia,
   });
 
   final _AdditionalFieldDraft draft;
   final int index;
+  final bool canReorder;
   final VoidCallback onRemove;
   final VoidCallback? onPickMedia;
 
@@ -2350,7 +2330,7 @@ class _AdditionalFieldEditor extends StatelessWidget {
         child: _CompoundCard(
           header: Row(
             children: [
-              _DragHandle(index: index),
+              _DragHandle(index: index, enabled: canReorder),
               SizedBox(width: context.theme.spaceSm),
               Expanded(
                 child: KinCryptText(
@@ -2570,15 +2550,17 @@ Widget _reorderProxyDecorator(
 }
 
 class _DragHandle extends StatelessWidget {
-  const _DragHandle({required this.index});
+  const _DragHandle({super.key, required this.index, required this.enabled});
 
   final int index;
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return ExcludeFocus(
       child: ReorderableDragStartListener(
         index: index,
+        enabled: enabled,
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: context.theme.spaceXs,
@@ -2587,7 +2569,9 @@ class _DragHandle extends StatelessWidget {
           child: Icon(
             LucideIcons.gripVertical,
             size: 20,
-            color: context.theme.textMuted,
+            color: enabled
+                ? context.theme.textMuted
+                : context.theme.textMuted.withValues(alpha: 0.4),
           ),
         ),
       ),
@@ -2944,7 +2928,13 @@ List<String> _normalizedGroups(Iterable<String> groups) {
   return groups
       .map((group) => group.trim())
       .where((group) => group.isNotEmpty && seen.add(group))
-      .toList();
+      .toList()
+    ..sort(_compareGroupNames);
+}
+
+int _compareGroupNames(String left, String right) {
+  final comparison = left.toLowerCase().compareTo(right.toLowerCase());
+  return comparison != 0 ? comparison : left.compareTo(right);
 }
 
 void _reorder<T>(List<T> items, int oldIndex, int newIndex) {
