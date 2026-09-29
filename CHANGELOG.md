@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.1.0](https://github.com/buehler/proton_contact_bridge/compare/v1.0.0...v1.1.0) (2026-09-29)
+
+
+### Features
+
+* **android:** add local contact provider for the phone ([0f110f8](https://github.com/buehler/proton_contact_bridge/commit/0f110f80339a6f1ec84381b362d5f71caa986166))
+* **ios:** add possibility to reset/force-sync contact provider ([75812d0](https://github.com/buehler/proton_contact_bridge/commit/75812d099e160fc8d819b5e19897b8289687a247))
+
+
+### Bug Fixes
+
+* dont show groups twice ([c1b8a17](https://github.com/buehler/proton_contact_bridge/commit/c1b8a17bc59316089f7dbea1f3d6840da244a947))
+* **macos:** correctly open file picker to upload images for contacts ([1aede34](https://github.com/buehler/proton_contact_bridge/commit/1aede34831714e846a465b46c3e4c25f32a9fa24))
+* prevent crash with only one ui element in drag and drop ([c1b8a17](https://github.com/buehler/proton_contact_bridge/commit/c1b8a17bc59316089f7dbea1f3d6840da244a947))
+* reordering ui handles ([c1b8a17](https://github.com/buehler/proton_contact_bridge/commit/c1b8a17bc59316089f7dbea1f3d6840da244a947))
+
 ## 1.0.0 (2026-09-21)
 
 
