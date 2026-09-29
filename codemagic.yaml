@@ -18,16 +18,9 @@ definitions:
   apple_integration: &apple_integration
     app_store_connect: Codemagic
 
-  common_cache: &common_cache
-    cache_paths:
-      - $HOME/.pub-cache
-      - $HOME/.gradle/caches
-      - $HOME/.gradle/wrapper
-
   common_workflow: &common_workflow
     <<: *mac_builder
     integrations: *apple_integration
-    cache: *common_cache
 
   preview_trigger: &preview_trigger
     events:
