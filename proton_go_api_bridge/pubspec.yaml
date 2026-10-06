@@ -23,6 +23,9 @@ dev_dependencies:
   test: ^1.28.0
   build_runner: ^2.15.2
 
+dependency_overrides:
+  analyzer: <14.0.0
+
 flutter:
   plugin:
     platforms:
