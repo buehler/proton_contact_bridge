@@ -96,8 +96,30 @@ message Groups {
     string group_name = 1;
   }
 
+  message RenameGroup {
+    string source_name = 1;
+    string target_name = 2;
+  }
+
+  message DeleteGroup {
+    string name = 1;
+  }
+
+  message ApplyContactGroupChanges {
+    message ContactPatch {
+      string contact_id = 1;
+      repeated string add_groups = 2;
+      repeated string remove_groups = 3;
+    }
+
+    repeated ContactPatch patches = 1;
+  }
+
   oneof action {
-    GetAll           get_all            = 1;
-    GetGroupContacts get_group_contacts = 2;
+    GetAll                   get_all                     = 1;
+    GetGroupContacts         get_group_contacts          = 2;
+    RenameGroup             rename_group                = 3;
+    DeleteGroup             delete_group                = 4;
+    ApplyContactGroupChanges apply_contact_group_changes = 5;
   }
 }

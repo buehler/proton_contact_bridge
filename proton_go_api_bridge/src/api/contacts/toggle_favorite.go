@@ -9,6 +9,9 @@ import (
 )
 
 func toggleFavorite(ctx context.Context, id string) (*bridge.Result, error) {
+	contactsrepo.ContactWriteMu.Lock()
+	defer contactsrepo.ContactWriteMu.Unlock()
+
 	if err := contactsrepo.NewContactRepository().ToggleFavorite(ctx, id); err != nil {
 		return nil, err
 	}

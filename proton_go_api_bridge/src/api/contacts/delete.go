@@ -16,6 +16,9 @@ var successResult = &bridge.Result{
 }
 
 func deleteContact(ctx context.Context, ID string) (*bridge.Result, error) {
+	contacts.ContactWriteMu.Lock()
+	defer contacts.ContactWriteMu.Unlock()
+
 	slog.DebugContext(ctx, "delete contact form database", slog.String("id", ID))
 	repo := contacts.NewContactRepository()
 	err := repo.Delete(ctx, ID)

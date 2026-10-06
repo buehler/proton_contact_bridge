@@ -47,6 +47,9 @@ type syncRun struct {
 
 var Instance = newContactSyncer()
 
+// ContactWriteMu serializes contact writes and sync with group mutations.
+var ContactWriteMu sync.Mutex
+
 func newContactSyncer() *ContactSyncer {
 	return &ContactSyncer{
 		CallbackContainer: utils.NewCallbackContainer[ContactSyncCallback](),
@@ -166,6 +169,9 @@ func (s *ContactSyncer) StartSync() bool {
 // TODO: add cancel sync.
 // TODO: when full sync is requested, directly restart the sync afterwards.
 func (s *ContactSyncer) syncContacts() {
+	ContactWriteMu.Lock()
+	defer ContactWriteMu.Unlock()
+
 	slog.Info("Starting contact sync")
 
 	/*

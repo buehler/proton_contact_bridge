@@ -76,7 +76,7 @@ message Contacts {
   }
 }
 
-message Groups{
+message Groups {
   message GetAll {
     repeated models.Group groups = 1;
   }
@@ -85,8 +85,27 @@ message Groups{
     repeated models.Contact contacts = 1;
   }
 
+  message Mutation {
+    message ContactFailure {
+      string contact_id = 1;
+      string message = 2;
+    }
+
+    repeated string changed_contact_ids = 1;
+    repeated string unchanged_contact_ids = 2;
+    repeated ContactFailure failed_contacts = 3;
+    // Counts distinct contacts; completed includes changed and unchanged contacts.
+    uint32 requested_count = 4;
+    uint32 completed_count = 5;
+    // Effective source name, present for rename and delete.
+    optional string source_name = 6;
+    // Effective target name, present for rename.
+    optional string target_name = 7;
+  }
+
   oneof result {
     GetAll        get_all        = 1;
     GroupContacts group_contacts = 2;
+    Mutation      mutation       = 3;
   }
 }

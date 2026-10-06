@@ -16,10 +16,18 @@ class ContactList extends ConsumerWidget {
     super.key,
     required this.contacts,
     required this.emptyMessage,
+    this.selectionMode = false,
+    this.selectedContactIds = const {},
+    this.onSelectionChanged,
+    this.onSelectionStarted,
   });
 
   final List<Contact> contacts;
   final String emptyMessage;
+  final bool selectionMode;
+  final Set<String> selectedContactIds;
+  final ValueChanged<String>? onSelectionChanged;
+  final ValueChanged<String>? onSelectionStarted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,36 +53,47 @@ class ContactList extends ConsumerWidget {
     final groups = groupedContacts.entries.toList()
       ..sort((left, right) => left.key.compareTo(right.key));
 
-    return RefreshIndicator(
-      color: context.theme.brandSignal,
-      backgroundColor: context.theme.surface,
-      onRefresh: () async {
-        final api = await ref.read(protonApiProvider.future);
-        await api.startSync();
-      },
-      child: ListView(
-        padding: EdgeInsets.symmetric(vertical: context.theme.spaceSm),
-        children: [
-          for (final contact in favorites)
+    final list = ListView(
+      padding: EdgeInsets.symmetric(vertical: context.theme.spaceSm),
+      children: [
+        for (final contact in favorites)
+          _ContactTile(
+            key: ValueKey('contact-${contact.id}'),
+            contact: contact,
+            settings: settings,
+            selectionMode: selectionMode,
+            selected: selectedContactIds.contains(contact.id),
+            onSelectionChanged: onSelectionChanged,
+            onSelectionStarted: onSelectionStarted,
+          ),
+        for (final group in groups) ...[
+          KinCryptAlphabetHeader(
+            key: ValueKey('group-${group.key}'),
+            label: group.key,
+          ),
+          for (final contact in group.value)
             _ContactTile(
               key: ValueKey('contact-${contact.id}'),
               contact: contact,
               settings: settings,
+              selectionMode: selectionMode,
+              selected: selectedContactIds.contains(contact.id),
+              onSelectionChanged: onSelectionChanged,
+              onSelectionStarted: onSelectionStarted,
             ),
-          for (final group in groups) ...[
-            KinCryptAlphabetHeader(
-              key: ValueKey('group-${group.key}'),
-              label: group.key,
-            ),
-            for (final contact in group.value)
-              _ContactTile(
-                key: ValueKey('contact-${contact.id}'),
-                contact: contact,
-                settings: settings,
-              ),
-          ],
         ],
-      ),
+      ],
+    );
+    return RefreshIndicator(
+      color: context.theme.brandSignal,
+      backgroundColor: context.theme.surface,
+      notificationPredicate: (notification) =>
+          !selectionMode && defaultScrollNotificationPredicate(notification),
+      onRefresh: () async {
+        final api = await ref.read(protonApiProvider.future);
+        await api.startSync();
+      },
+      child: list,
     );
   }
 
@@ -167,10 +186,18 @@ class _ContactTile extends StatelessWidget {
     super.key,
     required this.contact,
     required this.settings,
+    required this.selectionMode,
+    required this.selected,
+    this.onSelectionChanged,
+    this.onSelectionStarted,
   });
 
   final Contact contact;
   final ContactSettings settings;
+  final bool selectionMode;
+  final bool selected;
+  final ValueChanged<String>? onSelectionChanged;
+  final ValueChanged<String>? onSelectionStarted;
 
   @override
   Widget build(BuildContext context) {
@@ -184,16 +211,46 @@ class _ContactTile extends StatelessWidget {
         .where((number) => number.isNotEmpty)
         .firstOrNull;
 
+    final avatar = ContactAvatar(
+      contact: contact,
+      displayName: displayName,
+      showFavoriteBadge: true,
+    );
+
     return KinCryptListRow(
       title: displayName,
       subtitle: phone,
-      leading: ContactAvatar(
-        contact: contact,
-        displayName: displayName,
-        showFavoriteBadge: true,
-      ),
-      showDisclosure: true,
-      onTap: () => context.push('/contacts/${contact.id}'),
+      leading: selectionMode
+          ? SizedBox.square(
+              dimension: 40,
+              child: Center(
+                child: Icon(
+                  selected ? Icons.check_circle : Icons.circle_outlined,
+                  color: selected
+                      ? context.theme.brandVault
+                      : context.theme.textMuted,
+                ),
+              ),
+            )
+          : onSelectionStarted == null
+          ? avatar
+          : Semantics(
+              button: true,
+              label: 'Select $displayName',
+              child: InkWell(
+                onTap: () => onSelectionStarted?.call(contact.id),
+                customBorder: const CircleBorder(),
+                child: ExcludeSemantics(child: avatar),
+              ),
+            ),
+      selected: selectionMode && selected,
+      semanticLabel: selectionMode
+          ? '$displayName, ${selected ? 'selected' : 'not selected'}'
+          : null,
+      showDisclosure: !selectionMode,
+      onTap: selectionMode
+          ? () => onSelectionChanged?.call(contact.id)
+          : () => context.push('/contacts/${contact.id}'),
     );
   }
 }

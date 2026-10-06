@@ -8,6 +8,7 @@ import (
 	"proton_go_api_bridge/native/database"
 	"proton_go_api_bridge/native/database/models"
 	"proton_go_api_bridge/native/utils"
+	"slices"
 
 	"github.com/ProtonMail/go-proton-api"
 	"github.com/emersion/go-vcard"
@@ -78,14 +79,14 @@ func (r *ContactRepository) Search(ctx context.Context, query string) ([]models.
 
 func (r *ContactRepository) ToggleFavorite(ctx context.Context, ID string) error {
 	slog.DebugContext(ctx, "toggling favorite", slog.String("contact_id", ID))
-	_, err := updateContact(ctx, ID, func(card vcard.Card) error {
+	_, err := updateContact(ctx, ID, func(card vcard.Card) (bool, error) {
 		if !isFavorite(card) {
 			card.SetValue("X-PCB-FAVORITE", "true")
 		} else {
 			delete(card, "X-PCB-FAVORITE")
 		}
 
-		return nil
+		return true, nil
 	})
 	return err
 }
@@ -102,16 +103,40 @@ func (r *ContactRepository) Insert(ctx context.Context, contact vcard.Card) (mod
 
 func (r *ContactRepository) Update(ctx context.Context, ID string, contact vcard.Card) (models.Contact, error) {
 	slog.DebugContext(ctx, "updating contact", slog.String("contact_id", ID))
-	if c, err := updateContact(ctx, ID, func(card vcard.Card) error {
+	if c, err := updateContact(ctx, ID, func(card vcard.Card) (bool, error) {
 		clear(card)
 		maps.Copy(card, contact)
-		return nil
+		return true, nil
 	}); err != nil {
 		slog.ErrorContext(ctx, "failed to update contact", slog.String("contact_id", ID), slog.Any("error", err))
 		return models.Contact{}, err
 	} else {
 		return *c, nil
 	}
+}
+
+// UpdateCategories mutates only CATEGORIES on the current stored vCard.
+// The caller holds the contact write lock.
+func (r *ContactRepository) UpdateCategories(ctx context.Context, ID string, mutate func([]string) []string) (bool, error) {
+	changed := false
+	_, err := updateContact(ctx, ID, func(card vcard.Card) (bool, error) {
+		current := card.Categories()
+		if _, present := card[vcard.FieldCategories]; !present {
+			current = nil
+		}
+		next := mutate(current)
+		changed = !slices.Equal(current, next)
+		if !changed {
+			return false, nil
+		}
+		if len(next) == 0 {
+			delete(card, vcard.FieldCategories)
+		} else {
+			card.SetCategories(next)
+		}
+		return true, nil
+	})
+	return changed, err
 }
 
 func (r *ContactRepository) Delete(ctx context.Context, ID string) error {

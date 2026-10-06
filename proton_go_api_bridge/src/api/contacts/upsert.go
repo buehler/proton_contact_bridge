@@ -32,6 +32,8 @@ func upsertContact(ctx context.Context, contact *pmodels.Contact) (*bridge.Resul
 	if contact == nil {
 		return nil, fmt.Errorf("contact is nil")
 	}
+	contacts.ContactWriteMu.Lock()
+	defer contacts.ContactWriteMu.Unlock()
 
 	repo := contacts.NewContactRepository()
 	cCard := MapProtoToVCard(contact)

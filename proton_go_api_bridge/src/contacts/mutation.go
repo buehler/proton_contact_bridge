@@ -86,7 +86,7 @@ func createContact(ctx context.Context, contactCard vcard.Card) (*models.Contact
 	return ic.Contact, nil
 }
 
-type ContactUpdateFunc func(card vcard.Card) error
+type ContactUpdateFunc func(card vcard.Card) (bool, error)
 
 func updateContact(ctx context.Context, contactID string, update ContactUpdateFunc) (*models.Contact, error) {
 	slog.InfoContext(ctx, "Update contact in database and on API", slog.String("contact_id", contactID))
@@ -109,9 +109,13 @@ func updateContact(ctx context.Context, contactID string, update ContactUpdateFu
 		slog.ErrorContext(ctx, "Failed to decode contact vcard", slog.String("contact_id", contactID), slog.Any("error", err))
 		return nil, err
 	}
-	if err := update(contactCard); err != nil {
+	changed, err := update(contactCard)
+	if err != nil {
 		slog.ErrorContext(ctx, "Failed to update contact", slog.String("contact_id", contactID), slog.Any("error", err))
 		return nil, err
+	}
+	if !changed {
+		return &c, nil
 	}
 
 	// Local edits normalize the contact to one signed public card and one
