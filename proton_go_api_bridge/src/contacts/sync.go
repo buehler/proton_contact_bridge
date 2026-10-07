@@ -18,6 +18,7 @@ import (
 	"github.com/ProtonMail/go-proton-api"
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
 	"github.com/emersion/go-vcard"
+	"golang.org/x/sync/errgroup"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -293,22 +294,48 @@ func (s *ContactSyncer) fullSync(ctx context.Context, state *models.SyncState) e
 	}
 	slog.DebugContext(ctx, "Fetched contacts and groups", slog.Int("contacts", len(protonContacts)), slog.Int("groups", len(protonGroups)))
 
-	intermediates := make([]*intermediateContact, 0, len(protonContacts))
+	intermediates := make([]*intermediateContact, len(protonContacts))
 	total := uint32(len(protonContacts))
 	processed := uint32(0)
-	// TODO: parallelize this, but be careful with the rate limit of the API
-	for _, contact := range protonContacts {
-		ic, err := fetchContact(ctx, contact.ID)
-		if err != nil {
-			return fmt.Errorf("failed to fetch contact %s: %w", contact.ID, err)
+
+	g, fetchCtx := errgroup.WithContext(ctx)
+	g.SetLimit(5) // limit the number of concurrent fetch.
+	var progressMu sync.Mutex
+
+	for i, contact := range protonContacts {
+		if fetchCtx.Err() != nil {
+			break
 		}
-		intermediates = append(intermediates, ic)
-		processed++
-		s.ProgressCallbacks.Callbacks()(func(callback ContactSyncProgressCallback) bool {
-			callback(processed, total)
-			return true
+
+		g.Go(func() error {
+			if err := fetchCtx.Err(); err != nil {
+				return err
+			}
+
+			ic, err := fetchContact(fetchCtx, contact.ID)
+			if err != nil {
+				return fmt.Errorf("failed to fetch contact %s: %w", contact.ID, err)
+			}
+			intermediates[i] = ic
+
+			progressMu.Lock()
+			defer progressMu.Unlock()
+
+			processed++
+			s.ProgressCallbacks.Callbacks()(func(callback ContactSyncProgressCallback) bool {
+				callback(processed, total)
+				return true
+			})
+			return nil
 		})
 	}
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	slog.DebugContext(ctx, "Decrypted contact details", slog.Int("contacts", len(intermediates)))
 
 	if err = database.Instance.Transaction(func(tx *gorm.DB) error {
