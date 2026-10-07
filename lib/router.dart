@@ -45,7 +45,8 @@ GoRouter router(Ref ref) => GoRouter(
   routes: [
     GoRoute(
       path: '/logs',
-      builder: (_, _) => TalkerScreen(talker: talkerInstance),
+      builder: (_, _) =>
+          TalkerScreen(talker: talkerInstance, appBarTitle: 'Application Logs'),
     ),
     GoRoute(
       path: '/boot',
