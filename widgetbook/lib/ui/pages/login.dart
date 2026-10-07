@@ -44,3 +44,25 @@ Widget buildHumanVerificationPageUnavailableUrlUseCase(BuildContext context) =>
       state: PreviewState.populated,
       auth: const AuthState.requireHumanVerification(''),
     );
+
+@widgetbook.UseCase(name: 'Verification required', type: HumanVerificationPage)
+Widget buildHumanVerificationPageRequiredUseCase(BuildContext context) =>
+    previewPage(
+      context,
+      location: '/login/captcha',
+      auth: const AuthState.requireHumanVerification(
+        'https://verify.proton.me/widgetbook',
+      ),
+      startVerificationAutomatically: false,
+    );
+
+@widgetbook.UseCase(name: 'Preview website', type: HumanVerificationPage)
+Widget buildHumanVerificationPageWebsiteUseCase(BuildContext context) =>
+    previewPage(
+      context,
+      location: '/login/captcha',
+      auth: const AuthState.requireHumanVerification(
+        'https://verify.proton.me/widgetbook',
+      ),
+      startVerificationAutomatically: true,
+    );

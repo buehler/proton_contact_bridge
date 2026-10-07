@@ -27,7 +27,7 @@ Each use case has its own disposable in-memory contacts, groups, preferences, an
 
 Changing a use case or its data knobs resets its local session. Changing the global theme or viewport preserves the current edits and navigation. Loading scenarios stay loading; error scenarios remain failed, including after Retry. Automatic provider retries are disabled for deterministic previews.
 
-The unavailable human-verification URL keeps Start verification disabled and never loads a WebView. Successful authentication submissions navigate to the local contacts page; rejected submissions display the real page's error UI.
+Human verification includes Verification required (press Start verification), Preview website (opens automatically), and Unavailable URL (disabled). Both active previews load Google in the real WebView through a Widgetbook-only URL override; production still accepts only HTTPS verify.proton.me addresses. The website requires network access, while authentication, API, and database isolation remain in place. Successful authentication submissions navigate to the local contacts page; rejected submissions display the real page's error UI.
 
 Global addons select Light/Dark and phone/tablet viewports. None uses the available workbench size. Viewports simulate dimensions, safe areas, and layout breakpoints; they do not emulate native device capabilities or change `dart:io Platform`.
 
@@ -41,7 +41,7 @@ Camera, gallery, clipboard, and external links retain the application's platform
 - Open a contact, toggle its favorite, edit/save it, create another contact, and delete it. Confirm the local lists and groups reflect these changes.
 - Select contacts and add groups. Rename a group, remove members, and delete a group. Check membership and counts; removing the final member removes the group.
 - Change settings and theme locally. Confirm the global theme selection takes precedence when changed. Change account knobs and confirm the session resets.
-- Submit credentials or a complete OTP with Reject submission on/off. Check rejection messages, successful local navigation, unsupported TOTP, and disabled human verification.
+- Submit credentials or a complete OTP with Reject submission on/off. Check rejection messages, successful local navigation, unsupported TOTP, and all human-verification variants. In Verification required, press Start verification and confirm Google loads; Preview website opens it automatically. Unavailable URL stays disabled.
 - Switch to another use case and back. Confirm fixture data is restored and no preview changes appear in the application's persisted contacts or preferences.
 
 Verification for this change is static analysis only; the app and Widgetbook are not launched automatically and no tests are added.

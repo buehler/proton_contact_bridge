@@ -44,6 +44,7 @@ Widget previewPage(
   bool settingsControls = false,
   bool detailControls = false,
   bool groupControls = false,
+  bool? startVerificationAutomatically,
 }) {
   final favorite = detailControls
       ? context.knobs.boolean(label: 'Favorite', initialValue: true)
@@ -104,6 +105,7 @@ Widget previewPage(
     user,
     favorite,
     groupName,
+    startVerificationAutomatically,
   );
   final host = context.findAncestorStateOfType<_PreviewHostState>();
   return PreviewHarness(
@@ -118,6 +120,7 @@ Widget previewPage(
     settingsControls: settingsControls,
     favorite: favorite,
     groupName: groupName,
+    startVerificationAutomatically: startVerificationAutomatically,
   );
 }
 
@@ -159,6 +162,7 @@ class PreviewHarness extends StatefulWidget {
     required this.settingsControls,
     required this.favorite,
     required this.groupName,
+    this.startVerificationAutomatically,
   });
 
   final String location;
@@ -171,6 +175,7 @@ class PreviewHarness extends StatefulWidget {
   final bool settingsControls;
   final bool? favorite;
   final String groupName;
+  final bool? startVerificationAutomatically;
 
   @override
   State<PreviewHarness> createState() => _PreviewHarnessState();
@@ -185,6 +190,12 @@ class _PreviewHarnessState extends State<PreviewHarness> {
   late final container = ProviderContainer(
     retry: (_, _) => null,
     overrides: [
+      if (widget.startVerificationAutomatically != null)
+        humanVerificationUriProvider.overrideWith(
+          (ref, rawUrl) => rawUrl == null || rawUrl.isEmpty
+              ? null
+              : Uri.https('www.google.com', '/'),
+        ),
       protonApiProvider.overrideWith(
         (ref) =>
             throw StateError('API/database access is forbidden in Widgetbook'),
@@ -329,7 +340,10 @@ class _PreviewHarnessState extends State<PreviewHarness> {
           ),
           GoRoute(
             path: '/login/captcha',
-            builder: (_, _) => const HumanVerificationPage(),
+            builder: (_, _) => HumanVerificationPage(
+              startAutomatically:
+                  widget.startVerificationAutomatically ?? false,
+            ),
           ),
         ],
       ),

@@ -15,20 +15,36 @@ class LoginShell extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       body: KinCryptSafeArea(
         child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: context.theme.spaceXxl,
-            children: [
-              const KinCryptAppIcon(
-                size: 64,
-                showWordmark: true,
-                roundCorners: true,
-              ),
-              Padding(
-                padding: EdgeInsets.all(context.theme.spaceLg),
-                child: child,
-              ),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              const logoSize = 64.0;
+              final pageHeight =
+                  (constraints.maxHeight -
+                          logoSize -
+                          context.theme.spaceXxl -
+                          context.theme.spaceLg * 2)
+                      .clamp(0.0, double.infinity)
+                      .toDouble();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: context.theme.spaceXxl,
+                children: [
+                  const KinCryptAppIcon(
+                    size: logoSize,
+                    showWordmark: true,
+                    roundCorners: true,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(context.theme.spaceLg),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxHeight: pageHeight),
+                      child: child,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),

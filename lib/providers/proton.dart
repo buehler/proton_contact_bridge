@@ -9,6 +9,20 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'proton.g.dart';
 
+/// Validates the challenge address; previews can override the destination.
+@riverpod
+Uri? humanVerificationUri(Ref ref, String? rawUrl) {
+  final uri = rawUrl == null ? null : Uri.tryParse(rawUrl);
+  if (uri == null ||
+      uri.scheme != 'https' ||
+      uri.host.toLowerCase() != 'verify.proton.me') {
+    return null;
+  }
+  return uri.replace(
+    queryParameters: {...uri.queryParameters, 'embed': 'true'},
+  );
+}
+
 @Riverpod(keepAlive: true)
 Future<ProtonApi> protonApi(Ref ref) async {
   final nativePathChannel = ref.watch(nativePathChannelProvider);

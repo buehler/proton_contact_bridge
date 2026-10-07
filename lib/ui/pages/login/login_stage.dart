@@ -12,43 +12,51 @@ class LoginStagePanel extends ConsumerWidget {
     required this.stage,
     required this.child,
     this.maxWidth = 420,
+    this.maxHeight = 600,
+    this.expandChild = false,
   });
 
   final LoginStage stage;
   final Widget child;
   final double maxWidth;
+  final double maxHeight;
+  final bool expandChild;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = DisplayProfile.of(context);
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: maxWidth),
-      child: Container(
-        padding: EdgeInsets.all(
-          profile == DisplayProfile.compact
-              ? context.theme.spaceLg
-              : context.theme.spaceXl,
-        ),
-        decoration: BoxDecoration(
-          color: context.theme.surface,
-          border: Border.all(color: context.theme.divider),
-          borderRadius: BorderRadius.circular(context.theme.containerRadius),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const KinCryptText(
-              'Connect Proton',
-              variant: KinCryptTextVariant.sectionTitle,
-            ),
-            SizedBox(height: context.theme.spaceXs),
-            KinCryptText(_reason, color: context.theme.textMuted),
-            SizedBox(height: context.theme.spaceLg),
-            _LoginStageIndicator(stage: stage),
-            SizedBox(height: context.theme.spaceXl),
-            child,
-          ],
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight),
+        child: Container(
+          padding: EdgeInsets.all(
+            profile == DisplayProfile.compact
+                ? context.theme.spaceLg
+                : context.theme.spaceXl,
+          ),
+          decoration: BoxDecoration(
+            color: context.theme.surface,
+            border: Border.all(color: context.theme.divider),
+            borderRadius: BorderRadius.circular(context.theme.containerRadius),
+          ),
+          child: Column(
+            mainAxisSize: expandChild ? MainAxisSize.max : MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const KinCryptText(
+                'Connect to Proton',
+                variant: KinCryptTextVariant.sectionTitle,
+              ),
+              SizedBox(height: context.theme.spaceXs),
+              KinCryptText(_reason, color: context.theme.textMuted),
+              SizedBox(height: context.theme.spaceLg),
+              _LoginStageIndicator(stage: stage),
+              SizedBox(height: context.theme.spaceXl),
+              if (expandChild) Expanded(child: child) else child,
+            ],
+          ),
         ),
       ),
     );
@@ -86,7 +94,7 @@ class _LoginStageIndicator extends StatelessWidget {
           children: [
             _StagePill(label: 'Credentials', selected: selectedIndex == 0),
             _StagePill(label: 'Verification', selected: selectedIndex == 1),
-            _StagePill(label: 'One-time code', selected: selectedIndex == 2),
+            _StagePill(label: 'OTP', selected: selectedIndex == 2),
           ],
         ),
       ),

@@ -13,7 +13,9 @@ import 'package:proton_go_api_bridge/models/auth/auth_state.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class HumanVerificationPage extends ConsumerStatefulWidget {
-  const HumanVerificationPage({super.key});
+  const HumanVerificationPage({super.key, this.startAutomatically = false});
+
+  final bool startAutomatically;
 
   @override
   ConsumerState<HumanVerificationPage> createState() =>
@@ -33,18 +35,8 @@ class _HumanVerificationPageState extends ConsumerState<HumanVerificationPage> {
   String? _loadError;
   String? _authError;
 
-  Uri? _verificationUri(String? rawUrl) {
-    final uri = rawUrl == null ? null : Uri.tryParse(rawUrl);
-    if (uri == null ||
-        uri.scheme != 'https' ||
-        uri.host.toLowerCase() != 'verify.proton.me') {
-      return null;
-    }
-
-    return uri.replace(
-      queryParameters: {...uri.queryParameters, 'embed': 'true'},
-    );
-  }
+  Uri? _verificationUri(String? rawUrl) =>
+      ref.read(humanVerificationUriProvider(rawUrl));
 
   String? _currentVerificationUrl() {
     final authState = ref.read(protonAuthProvider).value;
@@ -218,12 +210,20 @@ class _HumanVerificationPageState extends ConsumerState<HumanVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(protonAuthProvider);
     final availableUrl = _currentVerificationUrl();
     final uriIsValid = _verificationUri(availableUrl) != null;
+    if (widget.startAutomatically && !_started && uriIsValid) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_started) _startVerification();
+      });
+    }
 
     return LoginStagePanel(
       stage: LoginStage.verification,
-      maxWidth: 600,
+      maxWidth: _started ? double.infinity : 600,
+      maxHeight: _started ? double.infinity : 600,
+      expandChild: _started,
       child: !_started
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -280,42 +280,44 @@ class _HumanVerificationPageState extends ConsumerState<HumanVerificationPage> {
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.max,
               children: [
-                Container(
-                  height: 400,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    color: context.theme.surfaceSoft,
-                    border: Border.all(color: context.theme.divider),
-                    borderRadius: BorderRadius.circular(
-                      context.theme.controlRadius,
+                Expanded(
+                  child: Container(
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      color: context.theme.surfaceSoft,
+                      border: Border.all(color: context.theme.divider),
+                      borderRadius: BorderRadius.circular(
+                        context.theme.controlRadius,
+                      ),
                     ),
-                  ),
-                  child: _controller == null
-                      ? _ChallengeFailure(message: _loadError)
-                      : Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            IgnorePointer(
-                              ignoring: _loading || _submitting,
-                              child: WebViewWidget(controller: _controller!),
-                            ),
-                            if (_loading || _submitting)
-                              ColoredBox(
-                                color: context.theme.surface.withValues(
-                                  alpha: 0.86,
-                                ),
-                                child: Center(
-                                  child: KinCryptActivityIndicator(
-                                    size: 28,
-                                    semanticLabel: _submitting
-                                        ? 'Submitting verification'
-                                        : 'Loading verification',
+                    child: _controller == null
+                        ? _ChallengeFailure(message: _loadError)
+                        : Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              IgnorePointer(
+                                ignoring: _loading || _submitting,
+                                child: WebViewWidget(controller: _controller!),
+                              ),
+                              if (_loading || _submitting)
+                                ColoredBox(
+                                  color: context.theme.surface.withValues(
+                                    alpha: 0.86,
+                                  ),
+                                  child: Center(
+                                    child: KinCryptActivityIndicator(
+                                      size: 28,
+                                      semanticLabel: _submitting
+                                          ? 'Submitting verification'
+                                          : 'Loading verification',
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
+                            ],
+                          ),
+                  ),
                 ),
                 if (_loadError case final error?) ...[
                   SizedBox(height: context.theme.spaceLg),
