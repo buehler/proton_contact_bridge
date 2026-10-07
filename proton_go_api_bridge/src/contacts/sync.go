@@ -29,6 +29,7 @@ var (
 )
 
 type ContactSyncCallback func(ContactSyncState)
+type ContactSyncProgressCallback func(progress uint32, total uint32)
 
 type ContactSyncer struct {
 	mu sync.RWMutex
@@ -37,7 +38,8 @@ type ContactSyncer struct {
 	syncError error
 	activeRun *syncRun
 
-	CallbackContainer *utils.CallbackContainer[ContactSyncCallback]
+	StateCallbacks    *utils.CallbackContainer[ContactSyncCallback]
+	ProgressCallbacks *utils.CallbackContainer[ContactSyncProgressCallback]
 }
 
 type syncRun struct {
@@ -52,7 +54,8 @@ var ContactWriteMu sync.Mutex
 
 func newContactSyncer() *ContactSyncer {
 	return &ContactSyncer{
-		CallbackContainer: utils.NewCallbackContainer[ContactSyncCallback](),
+		StateCallbacks:    utils.NewCallbackContainer[ContactSyncCallback](),
+		ProgressCallbacks: utils.NewCallbackContainer[ContactSyncProgressCallback](),
 	}
 }
 
@@ -78,7 +81,7 @@ func (s *ContactSyncer) setResult(state ContactSyncState, err error) {
 	s.syncError = err
 
 	snapshot := state
-	go s.CallbackContainer.Callbacks()(func(callback ContactSyncCallback) bool {
+	go s.StateCallbacks.Callbacks()(func(callback ContactSyncCallback) bool {
 		callback(snapshot)
 		return true
 	})
@@ -157,7 +160,7 @@ func (s *ContactSyncer) StartSync() bool {
 
 	s.state = ContactSyncStateRunning
 	s.syncError = nil
-	go s.CallbackContainer.Callbacks()(func(callback ContactSyncCallback) bool {
+	go s.StateCallbacks.Callbacks()(func(callback ContactSyncCallback) bool {
 		callback(ContactSyncStateRunning)
 		return true
 	})
@@ -166,7 +169,6 @@ func (s *ContactSyncer) StartSync() bool {
 	return true
 }
 
-// TODO: add cancel sync.
 // TODO: when full sync is requested, directly restart the sync afterwards.
 func (s *ContactSyncer) syncContacts() {
 	ContactWriteMu.Lock()
@@ -292,6 +294,8 @@ func (s *ContactSyncer) fullSync(ctx context.Context, state *models.SyncState) e
 	slog.DebugContext(ctx, "Fetched contacts and groups", slog.Int("contacts", len(protonContacts)), slog.Int("groups", len(protonGroups)))
 
 	intermediates := make([]*intermediateContact, 0, len(protonContacts))
+	total := uint32(len(protonContacts))
+	processed := uint32(0)
 	// TODO: parallelize this, but be careful with the rate limit of the API
 	for _, contact := range protonContacts {
 		ic, err := fetchContact(ctx, contact.ID)
@@ -299,6 +303,11 @@ func (s *ContactSyncer) fullSync(ctx context.Context, state *models.SyncState) e
 			return fmt.Errorf("failed to fetch contact %s: %w", contact.ID, err)
 		}
 		intermediates = append(intermediates, ic)
+		processed++
+		s.ProgressCallbacks.Callbacks()(func(callback ContactSyncProgressCallback) bool {
+			callback(processed, total)
+			return true
+		})
 	}
 	slog.DebugContext(ctx, "Decrypted contact details", slog.Int("contacts", len(intermediates)))
 
@@ -487,6 +496,12 @@ func (s *ContactSyncer) incrementalSync(ctx context.Context, state *models.SyncS
 			slog.Int("contacts_upsert", len(contactsUpsert)),
 			slog.Int("contacts_delete", len(contactsDelete)))
 
+		// in theory, "delete" events are also part of the progress. however,
+		// delete from the db is so fast that we don't care.
+		// the slow part that needs UI update is the fetch from API.
+		total := uint32(len(contactsUpsert))
+		processed := uint32(0)
+
 		for k, ic := range contactsUpsert {
 			if ic == nil {
 				slog.DebugContext(ctx, "fetch contact for upsert from API")
@@ -495,6 +510,11 @@ func (s *ContactSyncer) incrementalSync(ctx context.Context, state *models.SyncS
 					return fmt.Errorf("failed to fetch contact %s for upsert: %w", k, err)
 				}
 				contactsUpsert[k] = contact
+				processed++
+				s.ProgressCallbacks.Callbacks()(func(callback ContactSyncProgressCallback) bool {
+					callback(processed, total)
+					return true
+				})
 			}
 		}
 

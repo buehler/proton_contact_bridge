@@ -15,6 +15,7 @@ typedef unsigned char IncrementalSyncResult;
 #define INCREMENTAL_CONTACT_SYNC_UNAUTHED 0x03
 
 typedef void (*ContactSyncStateCallback)(unsigned char state);
+typedef void (*ContactSyncProgressCallback)(unsigned int progress, unsigned int total);
 
 static inline void callContactSyncStateCallback(
     ContactSyncStateCallback callback,
@@ -23,6 +24,16 @@ static inline void callContactSyncStateCallback(
     if (callback != NULL) {
         callback(state);
     }
+}
+
+static inline void callContactSyncProgressCallback(
+	ContactSyncProgressCallback callback,
+	unsigned int progress,
+	unsigned int total
+) {
+	if (callback != NULL) {
+		callback(progress, total);
+	}
 }
 */
 import "C"
@@ -76,7 +87,7 @@ func RegisterContactSyncStateCallback(
 ) {
 	l := slog.With("context", "RegisterContactSyncStateCallback")
 	l.Debug("register contact sync state callback", slog.Uint64("register_id", uint64(registerID)))
-	contacts.Instance.CallbackContainer.Register(uint32(registerID), func(css contacts.ContactSyncState) {
+	contacts.Instance.StateCallbacks.Register(uint32(registerID), func(css contacts.ContactSyncState) {
 		switch css {
 		case contacts.ContactSyncStateRunning:
 			C.callContactSyncStateCallback(callback, C.CONTACT_SYNC_STATE_RUNNING)
@@ -92,5 +103,24 @@ func RegisterContactSyncStateCallback(
 func UnregisterContactSyncStateCallback(registerID C.uint32_t) {
 	l := slog.With("context", "UnregisterContactSyncStateCallback")
 	l.Debug("unregister contact sync state callback", slog.Uint64("register_id", uint64(registerID)))
-	contacts.Instance.CallbackContainer.Unregister(uint32(registerID))
+	contacts.Instance.StateCallbacks.Unregister(uint32(registerID))
+}
+
+//export RegisterContactSyncProgressCallback
+func RegisterContactSyncProgressCallback(
+	registerID C.uint32_t,
+	callback C.ContactSyncProgressCallback,
+) {
+	l := slog.With("context", "RegisterContactSyncProgressCallback")
+	l.Debug("register contact sync progress callback", slog.Uint64("register_id", uint64(registerID)))
+	contacts.Instance.ProgressCallbacks.Register(uint32(registerID), func(progress uint32, total uint32) {
+		C.callContactSyncProgressCallback(callback, C.uint(progress), C.uint(total))
+	})
+}
+
+//export UnregisterContactSyncProgressCallback
+func UnregisterContactSyncProgressCallback(registerID C.uint32_t) {
+	l := slog.With("context", "UnregisterContactSyncProgressCallback")
+	l.Debug("unregister contact sync progress callback", slog.Uint64("register_id", uint64(registerID)))
+	contacts.Instance.ProgressCallbacks.Unregister(uint32(registerID))
 }

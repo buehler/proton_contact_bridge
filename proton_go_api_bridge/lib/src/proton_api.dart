@@ -3,6 +3,7 @@ import 'dart:ffi';
 
 import 'package:ffi/ffi.dart';
 import 'package:proton_go_api_bridge/models/auth/auth_state.dart';
+import 'package:proton_go_api_bridge/models/contacts/sync_progress.dart';
 import 'package:proton_go_api_bridge/models/contacts/sync_state.dart';
 import 'package:proton_go_api_bridge/src/bindings.g.dart';
 import 'package:proton_go_api_bridge/src/executor.dart';
@@ -13,7 +14,7 @@ import 'package:proton_go_api_bridge/src/protobuf/results/results.pb.dart' as r;
 import 'package:rxdart/subjects.dart';
 
 final class ProtonApi {
-  static var _nextRegistrationId = 1;
+  static var _nextRegId = 1;
   static var _dbInitialized = false;
 
   final _authController = BehaviorSubject<AuthState>.seeded(
@@ -22,13 +23,20 @@ final class ProtonApi {
   final _contactSyncController = BehaviorSubject<ContactSyncState>.seeded(
     ContactSyncState.idle,
   );
+  final _contactSyncProgressController =
+      BehaviorSubject<ContactSyncProgress>.seeded(ContactSyncProgress(0, 0));
 
   Stream<AuthState> get authStateStream => _authController.stream;
   Stream<ContactSyncState> get contactSyncStateStream =>
       _contactSyncController.stream;
+  Stream<ContactSyncProgress> get contactSyncProgressStream =>
+      _contactSyncProgressController.stream;
 
   late final int _registrationId;
-  late final NativeCallable<ContactSyncStateCallbackFunction> _listener;
+  late final NativeCallable<ContactSyncStateCallbackFunction>
+  _syncStateListener;
+  late final NativeCallable<ContactSyncProgressCallbackFunction>
+  _syncProgressListener;
   bool _disposed = false;
 
   ProtonApi(String databaseBasePath) {
@@ -42,20 +50,35 @@ final class ProtonApi {
       }
     }
 
-    _registrationId = _nextRegistrationId++;
-    _listener = NativeCallable.listener((int state) {
+    _registrationId = _nextRegId++;
+
+    _syncStateListener = NativeCallable.listener((int state) {
       final syncState = ContactSyncState.fromC(state);
       _contactSyncController.add(syncState);
     });
 
-    RegisterContactSyncStateCallback(_registrationId, _listener.nativeFunction);
+    _syncProgressListener = NativeCallable.listener((int processed, int total) {
+      final syncProgress = ContactSyncProgress(processed, total);
+      _contactSyncProgressController.add(syncProgress);
+    });
+
+    RegisterContactSyncStateCallback(
+      _registrationId,
+      _syncStateListener.nativeFunction,
+    );
+    RegisterContactSyncProgressCallback(
+      _registrationId,
+      _syncProgressListener.nativeFunction,
+    );
   }
 
   void dispose() {
     if (_disposed) return;
     _disposed = true;
-    _listener.close();
     UnregisterContactSyncStateCallback(_registrationId);
+    UnregisterContactSyncProgressCallback(_registrationId);
+    _syncStateListener.close();
+    _syncProgressListener.close();
   }
 
   void reset() {

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:proton_contact_bridge/providers/sync.dart';
 import 'package:proton_contact_bridge/ui/components/activity_indicator.dart';
 import 'package:proton_contact_bridge/ui/foundation/extensions.dart';
 
 enum KinCryptStatusTone { neutral, success, warning, danger }
-
-enum KinCryptSyncState { synced, syncing, pending, offline, failed }
 
 class KinCryptStatusIndicator extends StatelessWidget {
   const KinCryptStatusIndicator({
@@ -86,50 +86,49 @@ class KinCryptStatusIndicator extends StatelessWidget {
   };
 }
 
-class KinCryptSyncIndicator extends StatelessWidget {
+class KinCryptSyncIndicator extends ConsumerWidget {
   const KinCryptSyncIndicator({
     super.key,
-    required this.state,
     this.label,
     this.onPressed,
     this.announce = false,
   });
 
-  final KinCryptSyncState state;
   final String? label;
   final VoidCallback? onPressed;
   final bool announce;
 
   @override
-  Widget build(BuildContext context) => KinCryptStatusIndicator(
-    label: label ?? _defaultLabel,
-    tone: _tone,
-    icon: _icon,
-    loading: state == KinCryptSyncState.syncing,
-    onPressed: onPressed,
-    announce: announce,
-    semanticLabel: 'Synchronization status: ${label ?? _defaultLabel}',
-  );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sync = ref.watch(contactSyncStateWithProgressProvider).value;
+    final state = sync?.$1 ?? ContactSyncState.error;
+    final displayLabel =
+        label ??
+        switch (state) {
+          ContactSyncState.idle => 'Synced',
+          ContactSyncState.running =>
+            '${sync!.$2.processed} / ${sync.$2.total} synced',
+          ContactSyncState.offline => 'Offline',
+          ContactSyncState.error => 'Sync failed',
+        };
 
-  String get _defaultLabel => switch (state) {
-    KinCryptSyncState.synced => 'Synced',
-    KinCryptSyncState.syncing => 'Syncing…',
-    KinCryptSyncState.pending => 'Changes pending',
-    KinCryptSyncState.offline => 'Offline',
-    KinCryptSyncState.failed => 'Sync failed',
-  };
-
-  KinCryptStatusTone get _tone => switch (state) {
-    KinCryptSyncState.synced => KinCryptStatusTone.success,
-    KinCryptSyncState.syncing => KinCryptStatusTone.neutral,
-    KinCryptSyncState.pending => KinCryptStatusTone.warning,
-    KinCryptSyncState.offline => KinCryptStatusTone.neutral,
-    KinCryptSyncState.failed => KinCryptStatusTone.danger,
-  };
-
-  IconData? get _icon => switch (state) {
-    KinCryptSyncState.offline => Icons.cloud_off_outlined,
-    KinCryptSyncState.failed => Icons.error_outline,
-    _ => null,
-  };
+    return KinCryptStatusIndicator(
+      label: displayLabel,
+      tone: switch (state) {
+        ContactSyncState.idle => KinCryptStatusTone.success,
+        ContactSyncState.running ||
+        ContactSyncState.offline => KinCryptStatusTone.neutral,
+        ContactSyncState.error => KinCryptStatusTone.danger,
+      },
+      icon: switch (state) {
+        ContactSyncState.offline => Icons.cloud_off_outlined,
+        ContactSyncState.error => Icons.error_outline,
+        _ => null,
+      },
+      loading: state == ContactSyncState.running,
+      onPressed: onPressed,
+      announce: announce,
+      semanticLabel: 'Synchronization status: $displayLabel',
+    );
+  }
 }

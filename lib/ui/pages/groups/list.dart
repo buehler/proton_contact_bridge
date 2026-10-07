@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:proton_contact_bridge/providers/contacts.dart';
 import 'package:proton_contact_bridge/providers/groups.dart';
-import 'package:proton_contact_bridge/providers/sync.dart';
 import 'package:proton_contact_bridge/ui/components/activity_indicator.dart';
 import 'package:proton_contact_bridge/ui/components/group_list.dart';
 import 'package:proton_contact_bridge/ui/components/safe_area.dart';
@@ -10,20 +9,13 @@ import 'package:proton_contact_bridge/ui/components/status_indicator.dart';
 import 'package:proton_contact_bridge/ui/components/text.dart';
 import 'package:proton_contact_bridge/ui/foundation/extensions.dart';
 
-class _GroupsPageHeader extends ConsumerWidget {
+class _GroupsPageHeader extends StatelessWidget {
   const _GroupsPageHeader({required this.groupCount});
 
   final int groupCount;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final syncState = switch (ref.watch(contactSyncStateProvider)) {
-      AsyncValue(value: ContactSyncState.running) => KinCryptSyncState.syncing,
-      AsyncValue(value: ContactSyncState.idle) => KinCryptSyncState.synced,
-      AsyncValue(value: ContactSyncState.offline) => KinCryptSyncState.offline,
-      _ => KinCryptSyncState.failed,
-    };
-
+  Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(
         left: context.theme.spaceLg,
@@ -34,7 +26,7 @@ class _GroupsPageHeader extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text('Groups', style: context.theme.screenTitle),
-          KinCryptSyncIndicator(state: syncState),
+          const KinCryptSyncIndicator(),
           Align(
             alignment: Alignment.center,
             child: KinCryptText('$groupCount groups'),

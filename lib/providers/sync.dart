@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:logging/logging.dart';
 import 'package:proton_contact_bridge/providers/proton.dart';
 import 'package:proton_go_api_bridge/models/auth/auth_state.dart';
+import 'package:proton_go_api_bridge/models/contacts/sync_progress.dart';
 import 'package:proton_go_api_bridge/models/contacts/sync_state.dart' as b;
 import 'package:proton_go_api_bridge/proton_go_api_bridge.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -39,6 +40,24 @@ Stream<ContactSyncState> contactSyncState(Ref ref) async* {
       (true, ContactSyncState.running) => ContactSyncState.running,
       _ => ContactSyncState.error,
     },
+  );
+}
+
+@riverpod
+Stream<ContactSyncProgress> contactSyncProgress(Ref ref) async* {
+  final protonApi = await ref.watch(protonApiProvider.future);
+  yield* protonApi.contactSyncProgressStream;
+}
+
+@riverpod
+Stream<(ContactSyncState state, ContactSyncProgress progress)>
+contactSyncStateWithProgress(Ref ref) async* {
+  final stateAsync = ref.watch(contactSyncStateProvider);
+  final progressAsync = ref.watch(contactSyncProgressProvider);
+
+  yield (
+    stateAsync.value ?? ContactSyncState.idle,
+    progressAsync.value ?? ContactSyncProgress(0, 0),
   );
 }
 

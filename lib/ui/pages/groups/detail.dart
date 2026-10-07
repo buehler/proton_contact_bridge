@@ -61,12 +61,6 @@ class _GroupDetailPageState extends ConsumerState<GroupDetailPage> {
         (syncState == ContactSyncState.idle ||
             syncState == ContactSyncState.error);
     final displayName = _groupName.isEmpty ? 'Unknown group' : _groupName;
-    final indicatorState = switch (syncState) {
-      ContactSyncState.running => KinCryptSyncState.syncing,
-      ContactSyncState.idle => KinCryptSyncState.synced,
-      ContactSyncState.offline => KinCryptSyncState.offline,
-      _ => KinCryptSyncState.failed,
-    };
 
     return PopScope(
       canPop: !_selectionMode && !_isMutating,
@@ -81,7 +75,6 @@ class _GroupDetailPageState extends ConsumerState<GroupDetailPage> {
               _GroupDetailHeader(
                 groupName: displayName,
                 contactCount: contacts.value?.length ?? 0,
-                syncState: indicatorState,
                 actionsEnabled: canMutate,
                 selectionMode: _selectionMode,
                 selectionEnabled: canSelect,
@@ -396,7 +389,6 @@ class _GroupDetailHeader extends StatelessWidget {
   const _GroupDetailHeader({
     required this.groupName,
     required this.contactCount,
-    required this.syncState,
     required this.actionsEnabled,
     required this.selectionMode,
     required this.selectionEnabled,
@@ -409,7 +401,6 @@ class _GroupDetailHeader extends StatelessWidget {
 
   final String groupName;
   final int contactCount;
-  final KinCryptSyncState syncState;
   final bool actionsEnabled;
   final bool selectionMode;
   final bool selectionEnabled;
@@ -478,7 +469,7 @@ class _GroupDetailHeader extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                         SizedBox(height: theme.spaceXs),
-                        KinCryptSyncIndicator(state: syncState),
+                        const KinCryptSyncIndicator(),
                       ],
                     ),
                   ),

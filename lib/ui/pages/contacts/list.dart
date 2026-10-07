@@ -23,7 +23,7 @@ import 'package:proton_go_api_bridge/models/groups/group.dart';
 import 'package:proton_go_api_bridge/models/groups/group_mutation.dart';
 import 'package:proton_go_api_bridge/proton_go_api_bridge.dart';
 
-class _ContactsPageHeader extends ConsumerWidget {
+class _ContactsPageHeader extends StatelessWidget {
   const new({
     required this.contactCount,
     required this.selectionMode,
@@ -41,7 +41,7 @@ class _ContactsPageHeader extends ConsumerWidget {
   final VoidCallback onCancel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Padding(
+  Widget build(BuildContext context) => Padding(
     padding: EdgeInsets.symmetric(horizontal: context.theme.spaceLg),
     child: Column(
       children: [
@@ -52,17 +52,7 @@ class _ContactsPageHeader extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Contacts', style: context.theme.screenTitle),
-                  KinCryptSyncIndicator(
-                    state: switch (ref.watch(contactSyncStateProvider)) {
-                      AsyncValue(value: ContactSyncState.running) =>
-                        KinCryptSyncState.syncing,
-                      AsyncValue(value: ContactSyncState.idle) =>
-                        KinCryptSyncState.synced,
-                      AsyncValue(value: ContactSyncState.offline) =>
-                        KinCryptSyncState.offline,
-                      _ => KinCryptSyncState.failed,
-                    },
-                  ),
+                  const KinCryptSyncIndicator(),
                 ],
               ),
             ),
