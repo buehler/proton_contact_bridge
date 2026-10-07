@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.2.0](https://github.com/buehler/proton_contact_bridge/compare/v1.1.0...v1.2.0) (2026-10-07)
+
+
+### Features
+
+* add group edit functions ([53b7b71](https://github.com/buehler/proton_contact_bridge/commit/53b7b71b3e437286a1edc607a89f66b6270a7954))
+* **sync:** add reset db and force sync buttons ([ca701bd](https://github.com/buehler/proton_contact_bridge/commit/ca701bd075d68484972e0ef7260f7cc1358ae0f7))
+* **sync:** parallelize the sync with limit 5 ([b35eacc](https://github.com/buehler/proton_contact_bridge/commit/b35eacc4d4ffe900a2eba65726900c082e37772e))
+* **sync:** show sync progress (x/y synced) ([6fb0142](https://github.com/buehler/proton_contact_bridge/commit/6fb0142ac95c296836ef09d0d7de78406470370c))
+
+
+### Bug Fixes
+
+* dart analyzer version ([f783c4c](https://github.com/buehler/proton_contact_bridge/commit/f783c4cc7fa5feaf81d7c4315cbcacda6a3106ba))
+* header name in logs ([41bf2b2](https://github.com/buehler/proton_contact_bridge/commit/41bf2b2788addc8655fe0a118a7a3cd14cfd2405))
+* pin dependencies in native lib ([605a335](https://github.com/buehler/proton_contact_bridge/commit/605a335316ad908c9c102758627d9534a1a2b73b))
+* **sync:** allow sync with empty contacts ([bb9e3dc](https://github.com/buehler/proton_contact_bridge/commit/bb9e3dc5801189fc2dae8946900f2094534409b8))
+* **ui:** human verification allows more space ([8b4d45f](https://github.com/buehler/proton_contact_bridge/commit/8b4d45f1d343e006c840f80ec9ac7ace68566894))
+
 ## [1.1.0](https://github.com/buehler/proton_contact_bridge/compare/v1.0.0...v1.1.0) (2026-09-29)
 
 
