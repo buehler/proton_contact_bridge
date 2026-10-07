@@ -7,7 +7,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:proton_contact_bridge/providers/channels.dart';
 import 'package:proton_contact_bridge/providers/contacts.dart';
 import 'package:proton_contact_bridge/providers/groups.dart';
-import 'package:proton_contact_bridge/providers/proton.dart';
 import 'package:proton_contact_bridge/providers/sync.dart';
 import 'package:proton_contact_bridge/ui/components/activity_indicator.dart';
 import 'package:proton_contact_bridge/ui/components/button.dart';
@@ -20,7 +19,6 @@ import 'package:proton_contact_bridge/ui/components/text_fields.dart';
 import 'package:proton_contact_bridge/ui/foundation/extensions.dart';
 import 'package:proton_go_api_bridge/models/groups/group.dart';
 import 'package:proton_go_api_bridge/models/groups/group_mutation.dart';
-import 'package:proton_go_api_bridge/proton_go_api_bridge.dart';
 
 class GroupDetailPage extends ConsumerStatefulWidget {
   final String groupName;
@@ -285,7 +283,7 @@ class _GroupDetailPageState extends ConsumerState<GroupDetailPage> {
   Future<void> _runMutation({
     required String description,
     required String failureLabel,
-    required Future<GroupMutationResult> Function(ProtonApi api) execute,
+    required Future<GroupMutationResult> Function(GroupMutations api) execute,
     required Future<void> Function(GroupMutationResult result) retry,
     void Function(GroupMutationResult result)? onPartial,
     required FutureOr<void> Function(GroupMutationResult result) onComplete,
@@ -327,7 +325,7 @@ class _GroupDetailPageState extends ConsumerState<GroupDetailPage> {
     GroupMutationResult? result;
     Object? error;
     try {
-      final api = await ref.read(protonApiProvider.future);
+      final api = ref.read(groupMutationsProvider);
       result = await execute(api);
       if (mounted) {
         ref.invalidate(allGroupsProvider);

@@ -15,6 +15,13 @@ part 'sync.g.dart';
 
 enum ContactSyncState { idle, running, error, offline }
 
+/// Replaceable user-requested refresh, without starting background sync.
+@riverpod
+Future<void> Function() startContactSync(Ref ref) => () async {
+  final api = await ref.read(protonApiProvider.future);
+  await api.startSync();
+};
+
 @riverpod
 Stream<ContactSyncState> contactSyncState(Ref ref) async* {
   final protonApi = await ref.watch(protonApiProvider.future);

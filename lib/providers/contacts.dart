@@ -26,7 +26,7 @@ Future<List<Contact>> searchContacts(Ref ref, String query) async {
 }
 
 @riverpod
-final class ContactNotifier extends _$ContactNotifier {
+class ContactNotifier extends _$ContactNotifier {
   static final _contactRelatedProviders = [
     allContactsProvider,
     searchContactsProvider,

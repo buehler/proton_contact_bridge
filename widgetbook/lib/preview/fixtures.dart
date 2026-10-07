@@ -1,0 +1,107 @@
+import 'package:proton_go_api_bridge/models/contacts/contact.dart';
+
+const previewContactId = 'maya';
+const previewGroupName = 'Friends';
+
+const previewContacts = <Contact>[
+  Contact(
+    id: previewContactId,
+    formattedName: 'Maya Chen',
+    name: ContactName(firstName: 'Maya', lastName: 'Chen'),
+    isFavorite: true,
+    organization: 'Independent Design Studio',
+    title: 'Product designer',
+    gender: 'Female',
+    logos: [],
+    photos: [
+      ContactImage(
+        uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=',
+      ),
+    ],
+    emails: [
+      ContactEmail(address: 'maya@example.invalid', type: 'work'),
+      ContactEmail(address: 'maya.chen@example.invalid', type: 'home'),
+    ],
+    phones: [ContactPhone(number: '+41445550123', type: 'cell')],
+    addresses: [
+      ContactAddress(
+        street: 'Example Street 12',
+        zip: '8000',
+        city: 'Zürich',
+        region: 'ZH',
+        country: 'Switzerland',
+        type: 'home',
+      ),
+    ],
+    birthday: ContactDate(year: '1990', month: '5', day: '17'),
+    anniversary: ContactDate(year: '2018', month: '9', day: '22'),
+    notes: [
+      'Discuss the next design workshop. This deliberately longer note checks wrapping in the contact detail and editor compositions.',
+    ],
+    urls: ['https://example.invalid/maya'],
+    roles: ['Workshop facilitator'],
+    groups: [previewGroupName, 'Work'],
+  ),
+  Contact(
+    id: 'anna',
+    formattedName: 'Anna Keller',
+    name: ContactName(firstName: 'Anna', lastName: 'Keller'),
+    isFavorite: false,
+    logos: [],
+    photos: [],
+    emails: [ContactEmail(address: 'anna@example.invalid')],
+    phones: [],
+    addresses: [],
+    notes: [],
+    urls: [],
+    roles: [],
+    groups: [previewGroupName],
+  ),
+  Contact(
+    id: 'noah',
+    formattedName: 'Noah Müller',
+    name: ContactName(firstName: 'Noah', lastName: 'Müller'),
+    isFavorite: true,
+    logos: [],
+    photos: [],
+    emails: [],
+    phones: [ContactPhone(number: '+4915155501234')],
+    addresses: [],
+    notes: [],
+    urls: [],
+    roles: [],
+    groups: ['Family'],
+  ),
+  Contact(
+    id: 'long',
+    formattedName: 'Alexandra-Maria von Example with a deliberately long name',
+    isFavorite: false,
+    logos: [],
+    photos: [],
+    emails: [ContactEmail(address: 'alexandra.maria@example.invalid')],
+    phones: [],
+    addresses: [],
+    notes: [],
+    urls: [],
+    roles: [],
+    groups: ['Work'],
+  ),
+];
+
+final minimalContact = previewContacts.first.copyWith(
+  name: null,
+  organization: null,
+  title: null,
+  gender: null,
+  logos: [],
+  photos: [],
+  emails: [],
+  phones: [],
+  addresses: [],
+  birthday: null,
+  anniversary: null,
+  notes: [],
+  urls: [],
+  roles: [],
+  groups: [],
+);

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:proton_contact_bridge/providers/proton.dart';
+import 'package:proton_contact_bridge/providers/sync.dart';
 import 'package:proton_contact_bridge/providers/settings.dart';
 import 'package:proton_contact_bridge/ui/components/contact_avatar.dart';
 import 'package:proton_contact_bridge/ui/components/list_row.dart';
@@ -9,7 +9,6 @@ import 'package:proton_contact_bridge/ui/components/text.dart';
 import 'package:proton_contact_bridge/ui/foundation/extensions.dart';
 import 'package:proton_contact_bridge/utils.dart';
 import 'package:proton_go_api_bridge/models/contacts/contact.dart';
-import 'package:proton_go_api_bridge/proton_go_api_bridge.dart';
 
 class ContactList extends ConsumerWidget {
   const ContactList({
@@ -89,10 +88,7 @@ class ContactList extends ConsumerWidget {
       backgroundColor: context.theme.surface,
       notificationPredicate: (notification) =>
           !selectionMode && defaultScrollNotificationPredicate(notification),
-      onRefresh: () async {
-        final api = await ref.read(protonApiProvider.future);
-        await api.startSync();
-      },
+      onRefresh: () => ref.read(startContactSyncProvider)(),
       child: list,
     );
   }

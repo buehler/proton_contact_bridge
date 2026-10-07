@@ -7,7 +7,6 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:proton_contact_bridge/providers/channels.dart';
 import 'package:proton_contact_bridge/providers/contacts.dart';
 import 'package:proton_contact_bridge/providers/groups.dart';
-import 'package:proton_contact_bridge/providers/proton.dart';
 import 'package:proton_contact_bridge/providers/sync.dart';
 import 'package:proton_contact_bridge/ui/components/activity_indicator.dart';
 import 'package:proton_contact_bridge/ui/components/button.dart';
@@ -21,7 +20,6 @@ import 'package:proton_contact_bridge/ui/foundation/extensions.dart';
 import 'package:proton_go_api_bridge/models/contacts/contact.dart';
 import 'package:proton_go_api_bridge/models/groups/group.dart';
 import 'package:proton_go_api_bridge/models/groups/group_mutation.dart';
-import 'package:proton_go_api_bridge/proton_go_api_bridge.dart';
 
 class _ContactsPageHeader extends StatelessWidget {
   const new({
@@ -330,7 +328,7 @@ class _ContactsPageState extends ConsumerState<ContactsPage> {
     GroupMutationResult? result;
     Object? error;
     try {
-      final api = await ref.read(protonApiProvider.future);
+      final api = ref.read(groupMutationsProvider);
       result = await api.applyContactGroupChanges([
         for (final id in ids)
           ContactGroupPatch(contactId: id, addGroups: names),

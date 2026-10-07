@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 
-final class ContactProviderChannel {
+class ContactProviderChannel {
   static final _logger = Logger('ContactProviderChannel');
 
   static const _channel = MethodChannel(

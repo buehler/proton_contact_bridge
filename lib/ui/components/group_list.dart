@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:proton_contact_bridge/providers/proton.dart';
+import 'package:proton_contact_bridge/providers/sync.dart';
 import 'package:proton_contact_bridge/ui/components/list_row.dart';
 import 'package:proton_contact_bridge/ui/components/text.dart';
 import 'package:proton_contact_bridge/ui/foundation/extensions.dart';
 import 'package:proton_go_api_bridge/models/groups/group.dart';
-import 'package:proton_go_api_bridge/proton_go_api_bridge.dart';
 
 class GroupList extends ConsumerWidget {
   const GroupList({
@@ -48,10 +47,7 @@ class GroupList extends ConsumerWidget {
     return RefreshIndicator(
       color: context.theme.brandSignal,
       backgroundColor: context.theme.surface,
-      onRefresh: () async {
-        final api = await ref.read(protonApiProvider.future);
-        await api.startSync();
-      },
+      onRefresh: () => ref.read(startContactSyncProvider)(),
       child: ListView(
         padding: EdgeInsets.symmetric(vertical: context.theme.spaceSm),
         children: [
