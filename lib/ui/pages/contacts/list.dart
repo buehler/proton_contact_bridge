@@ -214,10 +214,11 @@ class _ContactsPageState extends ConsumerState<ContactsPage> {
                         onSelectionChanged: _toggleSelection,
                         onSelectionStarted: canSelect ? _startSelection : null,
                       ),
-                error: (_, _) => _buildEmptyState(
-                  context,
-                  Icons.error_outline,
-                  'Could not load contacts',
+                error: (_, _) => ContactList(
+                  contacts: const [],
+                  emptyMessage: 'Could not load contacts',
+                  emptyIcon: Icons.error_outline,
+                  selectionMode: _selectionMode,
                 ),
               ),
             ),
@@ -415,19 +416,6 @@ class _ContactsPageState extends ConsumerState<ContactsPage> {
       }
       setState(() => _debouncedSearchQuery = value);
     });
-  }
-
-  Widget _buildEmptyState(BuildContext context, IconData icon, String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 48),
-          const SizedBox(height: 12),
-          Text(message, style: Theme.of(context).textTheme.titleMedium),
-        ],
-      ),
-    );
   }
 }
 

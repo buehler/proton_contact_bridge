@@ -15,6 +15,7 @@ class ContactList extends ConsumerWidget {
     super.key,
     required this.contacts,
     required this.emptyMessage,
+    this.emptyIcon = Icons.person_off_outlined,
     this.selectionMode = false,
     this.selectedContactIds = const {},
     this.onSelectionChanged,
@@ -23,6 +24,7 @@ class ContactList extends ConsumerWidget {
 
   final List<Contact> contacts;
   final String emptyMessage;
+  final IconData emptyIcon;
   final bool selectionMode;
   final Set<String> selectedContactIds;
   final ValueChanged<String>? onSelectionChanged;
@@ -30,10 +32,6 @@ class ContactList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (contacts.isEmpty) {
-      return _EmptyState(message: emptyMessage);
-    }
-
     final settings =
         ref.watch(settingsProvider).value ?? ContactSettings.defaults;
     final favorites = contacts.where((contact) => contact.isFavorite).toList()
@@ -53,6 +51,7 @@ class ContactList extends ConsumerWidget {
       ..sort((left, right) => left.key.compareTo(right.key));
 
     final list = ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.symmetric(vertical: context.theme.spaceSm),
       children: [
         for (final contact in favorites)
@@ -89,7 +88,17 @@ class ContactList extends ConsumerWidget {
       notificationPredicate: (notification) =>
           !selectionMode && defaultScrollNotificationPredicate(notification),
       onRefresh: () => ref.read(startContactSyncProvider)(),
-      child: list,
+      child: contacts.isEmpty
+          ? CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _EmptyState(message: emptyMessage, icon: emptyIcon),
+                ),
+              ],
+            )
+          : list,
     );
   }
 
@@ -252,9 +261,10 @@ class _ContactTile extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.message});
+  const _EmptyState({required this.message, required this.icon});
 
   final String message;
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) => ColoredBox(
@@ -265,11 +275,7 @@ class _EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.person_off_outlined,
-              size: 48,
-              color: context.theme.textMuted,
-            ),
+            Icon(icon, size: 48, color: context.theme.textMuted),
             SizedBox(height: context.theme.spaceMd),
             KinCryptText(
               message,
