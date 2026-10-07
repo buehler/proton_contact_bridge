@@ -15,3 +15,8 @@ func InitializeDatabase(basePath *C.cchar_t) {
 	p := C.GoString(basePath)
 	database.SetupDB(p)
 }
+
+//export ResetDatabase
+func ResetDatabase() {
+	database.Reset()
+}

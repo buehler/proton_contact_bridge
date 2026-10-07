@@ -4,10 +4,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logging/logging.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:proton_contact_bridge/providers/channels.dart';
+import 'package:proton_contact_bridge/providers/contacts.dart';
+import 'package:proton_contact_bridge/providers/groups.dart';
 import 'package:proton_contact_bridge/providers/proton.dart';
 import 'package:proton_contact_bridge/providers/settings.dart';
+import 'package:proton_contact_bridge/providers/sync.dart'
+    show startContactSyncProvider;
 import 'package:proton_contact_bridge/providers/ui.dart';
 import 'package:proton_contact_bridge/providers/user_info.dart';
 import 'package:proton_contact_bridge/ui/components/activity_indicator.dart';
@@ -19,6 +24,7 @@ import 'package:proton_contact_bridge/ui/components/safe_area.dart';
 import 'package:proton_contact_bridge/ui/components/section.dart';
 import 'package:proton_contact_bridge/ui/components/text.dart';
 import 'package:proton_contact_bridge/ui/foundation/extensions.dart';
+import 'package:proton_go_api_bridge/models/contacts/sync_state.dart';
 import 'package:proton_go_api_bridge/models/user/user_info.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -33,12 +39,15 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   var _savingDisplayOrder = false;
   var _savingTheme = false;
   var _loggingOut = false;
+  var _resetDatabasePending = false;
+  var _resettingDatabase = false;
 
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(userInfoProvider);
     final settings = ref.watch(settingsProvider);
     final themeMode = ref.watch(themeProvider);
+    final api = ref.watch(protonApiProvider).value;
 
     return KinCryptSafeArea(
       child: ListView(
@@ -61,7 +70,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     label: 'Log out',
                     icon: LucideIcons.logOut,
                     color: context.theme.danger,
-                    enabled: !_loggingOut,
+                    enabled: !_loggingOut && !_resetDatabasePending,
                     onPressed: _logout,
                   ),
                 ),
@@ -186,6 +195,26 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                 showDisclosure: true,
                 onTap: () => context.push('/logs'),
               ),
+              StreamBuilder<ContactSyncState>(
+                stream: api?.contactSyncStateStream,
+                builder: (context, snapshot) => KinCryptButton(
+                  label: 'Reset DB',
+                  style: KinCryptButtonStyle.dangerSoft,
+                  loading: _resettingDatabase,
+                  enabled:
+                      !_resetDatabasePending &&
+                      !_loggingOut &&
+                      snapshot.hasData &&
+                      snapshot.data != ContactSyncState.running,
+                  onPressed: _resetDatabase,
+                ),
+              ),
+              KinCryptButton(
+                label: 'Start sync',
+                style: KinCryptButtonStyle.secondary,
+                onPressed: () =>
+                    unawaited(ref.read(startContactSyncProvider)()),
+              ),
             ],
           ),
         ],
@@ -230,13 +259,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _logout() async {
-    if (_loggingOut) return;
+    if (_loggingOut || _resetDatabasePending) return;
 
     final confirmed = await showModalBottomSheet<bool>(
       context: context,
       builder: (_) => const KinCryptLogoutBottomSheet(),
     );
-    if (confirmed != true || !mounted) return;
+    if (confirmed != true || !mounted || _resetDatabasePending) return;
 
     setState(() => _loggingOut = true);
     try {
@@ -252,6 +281,70 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       }
     } finally {
       if (mounted) setState(() => _loggingOut = false);
+    }
+  }
+
+  Future<void> _resetDatabase() async {
+    if (_resetDatabasePending || _loggingOut) return;
+
+    setState(() => _resetDatabasePending = true);
+    try {
+      final confirmed = await showModalBottomSheet<bool>(
+        context: context,
+        builder: (_) => const KinCryptConfirmationBottomSheet(
+          title: 'Reset database?',
+          message:
+              'This deletes and reinitializes the entire local database. '
+              'You will stay logged in. Contacts stored in Proton are unaffected.',
+          confirmLabel: 'Reset DB',
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+
+      final container = ProviderScope.containerOf(context, listen: false);
+      final api = await ref.read(protonApiProvider.future);
+      final syncState = await api.contactSyncStateStream.first;
+      if (!mounted) return;
+      if (syncState == ContactSyncState.running) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Wait for sync to finish before resetting the database',
+            ),
+          ),
+        );
+        return;
+      }
+
+      setState(() => _resettingDatabase = true);
+      await api.resetDatabase();
+      for (final provider in [
+        allContactsProvider,
+        contactProvider,
+        searchContactsProvider,
+        allGroupsProvider,
+        groupContactsProvider,
+      ]) {
+        container.invalidate(provider);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Database reset')));
+      }
+    } catch (err) {
+      Logger.root.severe('Could not reset database', err);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not reset database')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _resetDatabasePending = false;
+          _resettingDatabase = false;
+        });
+      }
     }
   }
 

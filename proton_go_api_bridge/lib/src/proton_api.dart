@@ -85,6 +85,12 @@ final class ProtonApi {
     _authController.add(AuthState.unknown());
   }
 
+  Future<void> resetDatabase() => Future.microtask(() {
+    ResetDatabase();
+    _contactSyncController.add(ContactSyncState.idle);
+    _contactSyncProgressController.add(ContactSyncProgress(0, 0));
+  });
+
   Future<void> initAuth() async {
     final result = await executeCommand(
       Command()..login = (c.Login()..init = (c.Login_Init())),
